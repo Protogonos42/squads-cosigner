@@ -267,6 +267,12 @@ as such wherever this is submitted.
 | M2 | **done 2026‑08‑27** — `check`: simulate + balance/ownership diffs + caps · devnet fixtures for every refusal code · `approve`/`reject`/`execute` with the co‑signer key, devnet e2e |
 | M3 | `watch` daemon · hash‑chained audit log · README reproduce script · dogfood as the live co‑signer on a multisig the author controls (devnet first; mainnet if funded). *Not* the author's existing vault: adding the tool as a member is a ConfigTransaction that vault's human co‑signer refuses by design — which is the point of the tool. |
 
+## Threat model
+
+[`docs/threat-model.md`](docs/threat-model.md) — what the tool defends
+against, what it does not, and what you must hold true yourself before
+putting its key on a real multisig. Read it before `watch`.
+
 ## Updates
 
 Weekly, in [`docs/updates/`](docs/updates/), including the count of
