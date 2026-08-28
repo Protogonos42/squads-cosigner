@@ -211,3 +211,51 @@ test("REFUSED_COUNTERPARTY: system.withdrawNonceAccount to an unlisted destinati
   const ev = lib.evaluateVaultMessage(m, RULES);
   assert.equal(ev.verdict, "REFUSED_COUNTERPARTY", JSON.stringify(ev.reasons));
 });
+
+// --- Token-2022 extension instructions (tags 26, 27, 37, 38, 42) ---
+// Before these were decoded they fell into the `interpretable` fallback: refused by default, but
+// unread under trustSimulationForAllowedPrograms. Confidential balances are encrypted, so a
+// confidential transfer moves value without the visible `amount` field changing — invisible to a diff.
+const TOKEN22 = lib.TOKEN_2022_PROGRAM;
+const TRUST = { ...RULES, trustSimulationForAllowedPrograms: true, allowPrograms: [...(RULES.allowPrograms ?? []), TOKEN22] };
+
+test("REFUSED_UNSCREENABLE: spl-token-2022 confidentialTransfer.transfer by the vault, even when simulation is trusted", () => {
+  const src = Keypair.generate().publicKey.toBase58();
+  const mint = Keypair.generate().publicKey.toBase58();
+  const data = Buffer.concat([Buffer.from([27, 7]), Buffer.alloc(64)]);
+  const m = msg([VAULT, src, STRANGER, mint, TOKEN22], [{ programIdIndex: 4, accountIndexes: [1, 3, 2, 0], data }], 2);
+  const ev = lib.evaluateVaultMessage(m, TRUST, { simulated: true });
+  assert.equal(ev.verdict, "REFUSED_UNSCREENABLE", JSON.stringify(ev.reasons));
+  assert.equal(ev.reasons[0].rule, "no-confidential-balances");
+  assert.match(ev.reasons[0].detail, /confidentialTransfer\.transfer/);
+});
+
+test("transferFee.transferCheckedWithFee: counted as a token transfer — APPROVE to a listed destination, REFUSED_COUNTERPARTY otherwise", () => {
+  const src = Keypair.generate().publicKey.toBase58();
+  const mint = Keypair.generate().publicKey.toBase58();
+  const data = Buffer.concat([Buffer.from([26, 1]), u64(5000), Buffer.from([6]), u64(50)]);
+  const ok = msg([VAULT, src, MEMBER, mint, TOKEN22], [{ programIdIndex: 4, accountIndexes: [1, 3, 2, 0], data }], 2);
+  const evOk = lib.evaluateVaultMessage(ok, TRUST);
+  assert.equal(evOk.verdict, "APPROVE", JSON.stringify(evOk.reasons));
+  assert.equal(evOk.tokenOut[mint], "5000");
+  const bad = msg([VAULT, src, STRANGER, mint, TOKEN22], [{ programIdIndex: 4, accountIndexes: [1, 3, 2, 0], data }], 2);
+  const evBad = lib.evaluateVaultMessage(bad, TRUST);
+  assert.equal(evBad.verdict, "REFUSED_COUNTERPARTY", JSON.stringify(evBad.reasons));
+  assert.equal(evBad.reasons[0].rule, "destinations");
+});
+
+test("REFUSED_COUNTERPARTY: spl-token-2022 withdrawExcessLamports authorised by the vault to an unlisted destination", () => {
+  const src = Keypair.generate().publicKey.toBase58();
+  const m = msg([VAULT, src, STRANGER, TOKEN22], [{ programIdIndex: 3, accountIndexes: [1, 2, 0], data: Buffer.from([38]) }], 2);
+  const ev = lib.evaluateVaultMessage(m, TRUST, { simulated: true });
+  assert.equal(ev.verdict, "REFUSED_COUNTERPARTY", JSON.stringify(ev.reasons));
+  assert.match(ev.reasons[0].detail, /withdrawExcessLamports/);
+});
+
+test("default rules: undecoded Token-2022 extension tags still refuse as REFUSED_UNSCREENABLE (interpretable)", () => {
+  const acct = Keypair.generate().publicKey.toBase58();
+  const m = msg([VAULT, acct, TOKEN22], [{ programIdIndex: 2, accountIndexes: [1, 0], data: Buffer.from([34, 0]) }], 1);
+  const ev = lib.evaluateVaultMessage(m, { ...RULES, allowPrograms: [...(RULES.allowPrograms ?? []), TOKEN22] });
+  assert.equal(ev.verdict, "REFUSED_UNSCREENABLE", JSON.stringify(ev.reasons));
+  assert.equal(ev.reasons[0].rule, "interpretable");
+});

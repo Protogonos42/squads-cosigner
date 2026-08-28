@@ -51,6 +51,8 @@ export interface Explained {
     closesAccount?: boolean;
     upgradesProgram?: boolean;
     squadsConfig?: boolean;
+    /** Token-2022 confidential-transfer family: amounts are encrypted, unreadable statically and invisible to balance diffs */
+    confidential?: boolean;
   };
 }
 
@@ -135,6 +137,34 @@ function explainToken(programName: string, a: DecodedAccountMeta[], d: Buffer): 
       return { op: `${programName}.closeAccount`, detail: { account: acc(a, 0), destination: acc(a, 1), owner: acc(a, 2) }, flags: { closesAccount: true, movesLamports: true } };
     case 17:
       return { op: `${programName}.syncNative`, detail: { account: acc(a, 0) }, flags: {} };
+    // --- Token-2022 extension families (spl-token-2022 TokenInstruction 26+). Only the ones that can
+    // move or hide a vault's value are decoded; the rest still fall to the `interpretable` fallback. ---
+    case 26: { // TransferFeeExtension { sub: u8, ... }
+      const sub = d.length > 1 ? d[1] : -1;
+      switch (sub) {
+        case 0: return { op: `${programName}.transferFee.initializeTransferFeeConfig`, detail: { mint: acc(a, 0) }, flags: {} };
+        case 1: // TransferCheckedWithFee { amount u64, decimals u8, fee u64 } — accounts: source, mint, destination, authority
+          return { op: `${programName}.transferFee.transferCheckedWithFee`, detail: { source: acc(a, 0), mint: acc(a, 1), destination: acc(a, 2), authority: acc(a, 3), amount: d.length >= 10 ? u64le(d, 2).toString() : "0", decimals: d.length >= 11 ? d[10] : null, fee: d.length >= 19 ? u64le(d, 11).toString() : null }, flags: { movesTokens: true } };
+        case 2: // WithdrawWithheldTokensFromMint — accounts: mint, destination, authority
+          return { op: `${programName}.transferFee.withdrawWithheldTokensFromMint`, detail: { mint: acc(a, 0), destination: acc(a, 1), authority: acc(a, 2) }, flags: { movesTokens: true } };
+        case 3: // WithdrawWithheldTokensFromAccounts — accounts: mint, destination, authority, sources...
+          return { op: `${programName}.transferFee.withdrawWithheldTokensFromAccounts`, detail: { mint: acc(a, 0), destination: acc(a, 1), authority: acc(a, 2) }, flags: { movesTokens: true } };
+        case 4: return { op: `${programName}.transferFee.harvestWithheldTokensToMint`, detail: { mint: acc(a, 0) }, flags: {} };
+        case 5: return { op: `${programName}.transferFee.setTransferFee`, detail: { mint: acc(a, 0), authority: acc(a, 1) }, flags: {} };
+        default: return { op: `${programName}.transferFee.unknown`, detail: {}, flags: {} };
+      }
+    }
+    case 27: { // ConfidentialTransferExtension { sub: u8, ... } — balances are ElGamal-encrypted; nothing here is screenable
+      const names: Record<number, string> = { 0: "initializeMint", 1: "updateMint", 2: "configureAccount", 3: "approveAccount", 4: "emptyAccount", 5: "deposit", 6: "withdraw", 7: "transfer", 8: "applyPendingBalance", 9: "enableConfidentialCredits", 10: "disableConfidentialCredits", 11: "enableNonConfidentialCredits", 12: "disableNonConfidentialCredits", 13: "transferWithFee", 14: "configureAccountWithRegistry" };
+      const sub = d.length > 1 ? d[1] : -1;
+      return { op: `${programName}.confidentialTransfer.${names[sub] ?? "other"}`, detail: { account: acc(a, 0), mint: acc(a, 1), sub }, flags: { confidential: true } };
+    }
+    case 37: // ConfidentialTransferFeeExtension
+      return { op: `${programName}.confidentialTransferFee.other`, detail: { account: acc(a, 0), sub: d.length > 1 ? d[1] : null }, flags: { confidential: true } };
+    case 42: // ConfidentialMintBurn
+      return { op: `${programName}.confidentialMintBurn.other`, detail: { account: acc(a, 0), sub: d.length > 1 ? d[1] : null }, flags: { confidential: true } };
+    case 38: // WithdrawExcessLamports — accounts: source, destination, authority; amount is whatever exceeds rent-exemption (not in data)
+      return { op: `${programName}.withdrawExcessLamports`, detail: { account: acc(a, 0), destination: acc(a, 1), authority: acc(a, 2), lamports: null }, flags: { movesLamports: true } };
     default:
       return { op: `${programName}.${tag}`, detail: {}, flags: {} };
   }

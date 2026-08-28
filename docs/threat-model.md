@@ -111,11 +111,26 @@ returned when a proposal is closed goes to the multisig's `rentCollector`,
 which the tool does not control and cannot change (that would be a
 `ConfigTransaction`).
 
-**Token-2022 extensions.** Transfer hooks, confidential transfers and
-other extensions are not specifically modelled. The decoder reads the
-base instruction; anything it cannot positively interpret refuses as
-`REFUSED_UNSCREENABLE`. That is the safe direction, but do not assume
-extension semantics (e.g. a hook's side effects) have been screened.
+**Token-2022 extensions.** Three extension families are decoded because
+they can move or hide a vault's value: `TransferFeeExtension` (tag 26 —
+`transferCheckedWithFee` and the withheld-fee withdrawals count as token
+transfers: `own-tokens-only`, `destinations`, `maxTokenOut`);
+`ConfidentialTransferExtension` (27, plus 37 and 42) — balances are
+ElGamal-encrypted, so the amount is neither in the instruction data nor in
+a simulation diff of the visible `amount` field; any confidential
+instruction the vault takes part in is `REFUSED_UNSCREENABLE`
+(`no-confidential-balances`), and `trustSimulationForAllowedPrograms` does
+not lift that, because there is nothing for the simulation to see; and
+`WithdrawExcessLamports` (38) — a lamport outflow under the vault's
+signature, subject to `destinations` (the amount is not in the data, so the
+static cap does not see it; the simulated cap does only when the source is
+the vault PDA itself). Every other extension instruction (CPI guard, memo
+transfer, interest-bearing, metadata/group pointers, reallocate, …) still
+falls to `interpretable` → `REFUSED_UNSCREENABLE` by default. Two things
+remain out of scope by construction: a *mint's* properties (a permanent
+delegate or transfer hook on a token the vault already holds lets that
+mint's authority act with no proposal at all — the tool screens proposals,
+not holdings), and a transfer hook's side effects on a decoded transfer.
 
 **RPC trust.** The tool believes the RPC endpoint it is given. A malicious
 RPC can lie about account state, lookup-table contents and simulation

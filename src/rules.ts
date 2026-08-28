@@ -233,6 +233,15 @@ export function evaluateVaultMessage(msg: DecodedVaultMessage, rules: Rules, opt
       }
     }
 
+    if (e.flags.confidential) {
+      // Token-2022 confidential balances are encrypted on chain: the amount is not in the instruction data and a
+      // simulation diff of the visible `amount` field does not move. Neither reading can bound what leaves, so any
+      // confidential-transfer instruction the vault takes part in is unscreenable — even under trustSimulation.
+      if (ix.accounts.some((a) => a.pubkey === rules.vault || vaultOwned.has(a.pubkey))) {
+        reasons.push({ verdict: "REFUSED_UNSCREENABLE", rule: "no-confidential-balances", instruction: n, detail: `${e.op}: confidential amounts cannot be read statically or from simulation diffs` });
+      }
+    }
+
     // --- token custody: the vault may only move tokens it owns ---
     if (e.flags.movesTokens || e.op.endsWith(".approve") || e.op.endsWith(".approveChecked")) {
       const authority = (e.detail.authority ?? e.detail.owner ?? null) as string | null;
