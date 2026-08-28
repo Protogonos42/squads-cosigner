@@ -140,14 +140,17 @@ funded by a plain 0.01 SOL transfer from the author's own float key
 `scripts/fund-dogfood.js`; the custodian was given a veto window first and
 did not use it), and on 2026‑08‑28 `watch` ran unattended as the real second
 signature on mainnet (`--rounds 3 --interval 15000`, log
-`fixtures/mainnet-dogfood/audit.jsonl`, `verify-log` ok over 2 entries):
+`fixtures/mainnet-dogfood/audit.jsonl`, `verify-log` ok over 4 entries):
 
 | index | proposal | verdict | approve | execute |
 |---|---|---|---|---|
 | 1 | `BC7TWwYXETqUPf5fktn8PcWSodzusL88rYaf72Fen1W3` (0.005 SOL vault→proposer, created `488bNEd7LuodHvp6xpv1gC2yRuJn93byurjFa19p1JRzkZSEx14jsv6W8kYdZhrJ3RWHPgbYCJjLMNSCze8oAJ21`) | APPROVE | `88J2Xw8zQWWPDT13NH4VYK69u5aatiXqPZpA3GrgqsBVrqYMpVKmm3YhtjnAEjABBCW45F7vbN1y6TrvNmS3iAa` | `3Dh575f9mSJYzLhuEe61DLg4mSE7Lu7j5DRsaZVjiTTrBZEDjdzbU8RFF3u1Pn6bq3HJHRakSEJ129KaUHt3qk5F` |
+| 2 | `7BQfL4YYqrSMzQFRYt3aV8PbciRXkcfSqbSXKCRHseNH` (0.005 SOL vault→proposer, created `2mMpySV8eKTdZ8yaS7RhQhrtjQqP7otssPxK7CXhZLqBycwgHNvZ6w8wHVq442tMjg7bE3E1iS9PP86f7nFcmrqm`) | APPROVE | `5gHpkJdFmxS4S9MT4P5F8RcnnPR84KF5nmvgRsvcZEzxi21WYj62PCob7ZV1TtUsHBbsdggtzo3AfpRsahSAdXRD` | `3jvak81nx6sJLJASzkYzhK6mduoPHFMF6u1GGmWc3fTGp1gtgqBdeu5vbbkveAevKGXtV4vnCwHhBDva2niYZqNx` |
 
-Round 1 approved and executed within two seconds of the poll; rounds 2–3
-found nothing to do. Total mainnet cost of the dogfood: multisig rent
+Index 1: round 1 approved and executed within two seconds of the poll;
+rounds 2–3 found nothing to do. Index 2 (2026‑08‑28, `--rounds 2`): approved
+and executed three seconds after the proposal landed; both proposals were
+then closed and their rent reclaimed, draining the dogfood vault to zero. Total mainnet cost of the dogfood: multisig rent
 ≈0.004 SOL, proposal rent (reclaimable), and ≈0.00002 SOL in fees.
 
 **Simulation** — `src/simulate.ts`:
