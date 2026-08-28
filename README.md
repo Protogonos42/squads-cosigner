@@ -290,7 +290,11 @@ exit 3. Config transactions are decided statically; nothing is simulated.
 These are other people's proposals and will be executed, rejected or go
 stale; re‑run `find-active.js` for fresh ones. For an APPROVE on record, the
 fixture in Quick start (`vault-tx-2-create.json`, the author's own vault
-depositing into the Jito stake pool) exits 0.
+depositing 0.4 SOL into the Jito stake pool) exits 0 with `--static`. Without
+`--static` it is now `REFUSED_UNSCREENABLE` too: that proposal executed on
+2026‑08‑27, the vault no longer holds the 0.4 SOL, and the replayed
+simulation fails with `custom program error: 0x1` — the rules passed, the
+chain said no, and the tool reports the chain.
 
 ## Why this and not …
 
