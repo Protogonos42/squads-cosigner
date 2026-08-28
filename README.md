@@ -1,5 +1,13 @@
 # squads-cosigner
 
+**In plain terms:** you have a shared treasury on Solana (a Squads multisig)
+and you want something automated — a bot, a CI job, an AI agent — to be able
+to spend from it, without it ever being able to empty it. This tool is the
+second signature that makes that safe: the automation can only *propose* a
+payment, and this tool approves it only if it fits rules you wrote down in
+advance (which programs, which recipients, how much, never the treasury's own
+settings). Anything else is refused, and every decision is logged.
+
 A rule-bound second signature for [Squads v4](https://github.com/Squads-Protocol/v4) multisigs.
 
 Repository: <https://github.com/Protogonos42/squads-cosigner> · MIT · written and
