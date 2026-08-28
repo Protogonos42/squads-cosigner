@@ -6,6 +6,12 @@
       "proposal": "BC7TWwYXETqUPf5fktn8PcWSodzusL88rYaf72Fen1W3",
       "lamports": "5000000",
       "createSignature": "488bNEd7LuodHvp6xpv1gC2yRuJn93byurjFa19p1JRzkZSEx14jsv6W8kYdZhrJ3RWHPgbYCJjLMNSCze8oAJ21"
+    },
+    "2": {
+      "transaction": "8RwdPfWL41AdNftzkLrQfeW2mDEbHDbFvdoCXurFM8VP",
+      "proposal": "7BQfL4YYqrSMzQFRYt3aV8PbciRXkcfSqbSXKCRHseNH",
+      "lamports": "5000000",
+      "createSignature": "2mMpySV8eKTdZ8yaS7RhQhrtjQqP7otssPxK7CXhZLqBycwgHNvZ6w8wHVq442tMjg7bE3E1iS9PP86f7nFcmrqm"
     }
   },
   "multisig": "JDWhhtXcRoRGP5fv9kVoGfYFGYUXRUSpqA4Zvt86qiBT",
