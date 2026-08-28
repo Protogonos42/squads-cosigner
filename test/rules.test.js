@@ -119,6 +119,32 @@ test("REFUSED_CONFIG_CHANGE: any ConfigTransaction under default rules", () => {
   assert.equal(lib.evaluateConfigTransaction(tx, { ...RULES, allowConfigTransactions: true }).verdict, "REFUSED_THEFT_SHAPED");
 });
 
+test("config.timelock: SetTimeLock refused when shortening or when current is unknown; allowed when lengthening", () => {
+  const rules = { ...RULES, allowConfigTransactions: true };
+  const tx = (newTimeLock) => ({ kind: "ConfigTransaction", multisig: "x", creator: "y", index: "4", bump: 0, actions: [{ kind: "SetTimeLock", args: { newTimeLock } }] });
+  let ev = lib.evaluateConfigTransaction(tx(0), rules, { currentTimeLock: 3600 });
+  assert.equal(ev.verdict, "REFUSED_THEFT_SHAPED");
+  assert.equal(ev.reasons[0].rule, "config.timelock");
+  ev = lib.evaluateConfigTransaction(tx(7200), rules);
+  assert.equal(ev.verdict, "REFUSED_THEFT_SHAPED", "unknown current time lock must refuse");
+  ev = lib.evaluateConfigTransaction(tx(7200), rules, { currentTimeLock: 3600 });
+  assert.equal(ev.verdict, "APPROVE");
+  ev = lib.evaluateConfigTransaction(tx(3600), rules, { currentTimeLock: 3600 });
+  assert.equal(ev.verdict, "APPROVE", "equal is not a shortening");
+  // default rules still refuse it as a config change regardless of context
+  assert.equal(lib.evaluateConfigTransaction(tx(7200), RULES, { currentTimeLock: 0 }).verdict, "REFUSED_CONFIG_CHANGE");
+});
+
+test("config.spendingLimit: AddSpendingLimit refused, RemoveSpendingLimit allowed (when config txs are opted in)", () => {
+  const rules = { ...RULES, allowConfigTransactions: true };
+  const add = { kind: "ConfigTransaction", multisig: "x", creator: "y", index: "5", bump: 0, actions: [{ kind: "AddSpendingLimit", args: { members: [STRANGER], amount: "1000000000", vaultIndex: 0 } }] };
+  const ev = lib.evaluateConfigTransaction(add, rules, { currentTimeLock: 0 });
+  assert.equal(ev.verdict, "REFUSED_THEFT_SHAPED");
+  assert.equal(ev.reasons[0].rule, "config.spendingLimit");
+  const rm = { ...add, actions: [{ kind: "RemoveSpendingLimit", args: { spendingLimit: STRANGER } }] };
+  assert.equal(lib.evaluateConfigTransaction(rm, rules, { currentTimeLock: 0 }).verdict, "APPROVE");
+});
+
 test("REFUSED_UNSCREENABLE: program not in allowPrograms", () => {
   const prog = Keypair.generate().publicKey.toBase58();
   const m = msg([VAULT, prog], [{ programIdIndex: 1, accountIndexes: [0], data: Buffer.from([1, 2, 3]) }], 0);

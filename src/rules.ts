@@ -107,17 +107,36 @@ function destinationAllowed(key: string | null, rules: Rules, vaultOwned: Set<st
   return { ok: true, why: "destination permitted" };
 }
 
+export interface ConfigContext {
+  /** The multisig's current time lock in seconds, if the caller fetched it. Unknown → SetTimeLock is refused. */
+  currentTimeLock?: number;
+}
+
 /** Evaluate a ConfigTransaction. Always REFUSED_CONFIG_CHANGE unless rules opt in. */
-export function evaluateConfigTransaction(tx: DecodedConfigTransaction, rules: Rules): Evaluation {
+export function evaluateConfigTransaction(tx: DecodedConfigTransaction, rules: Rules, ctx: ConfigContext = {}): Evaluation {
   const reasons: Reason[] = [];
   if (!rules.allowConfigTransactions) {
     reasons.push({ verdict: "REFUSED_CONFIG_CHANGE", rule: "allowConfigTransactions=false", instruction: null, detail: `ConfigTransaction with actions [${tx.actions.map((a) => a.kind).join(", ")}]` });
   } else {
-    // Even when allowed, member/threshold/authority changes are theft-shaped by construction.
+    // Even when allowed, some actions are theft-shaped by construction.
     for (const [i, a] of tx.actions.entries()) {
       if (["AddMember", "RemoveMember", "ChangeThreshold", "SetRentCollector"].includes(a.kind)) {
+        // Who controls the vault.
         reasons.push({ verdict: "REFUSED_THEFT_SHAPED", rule: "config.membership", instruction: i, detail: `${a.kind} would change who controls the vault` });
+      } else if (a.kind === "SetTimeLock") {
+        // Shortening the time lock removes the window in which a bad proposal can be seen and rejected
+        // (the Drift April 2026 chain went through "zero timelock"). Lengthening is fine; unknown current → refuse.
+        const next = Number(a.args.newTimeLock);
+        if (ctx.currentTimeLock === undefined) {
+          reasons.push({ verdict: "REFUSED_THEFT_SHAPED", rule: "config.timelock", instruction: i, detail: `SetTimeLock(${next}) with current time lock unknown — cannot prove it does not shorten` });
+        } else if (!(next >= ctx.currentTimeLock)) {
+          reasons.push({ verdict: "REFUSED_THEFT_SHAPED", rule: "config.timelock", instruction: i, detail: `SetTimeLock would shorten the time lock ${ctx.currentTimeLock}s → ${next}s` });
+        }
+      } else if (a.kind === "AddSpendingLimit") {
+        // A spending limit lets the listed members move funds with no proposal, no threshold and no co-signer.
+        reasons.push({ verdict: "REFUSED_THEFT_SHAPED", rule: "config.spendingLimit", instruction: i, detail: `AddSpendingLimit would let members [${(a.args.members as string[] | undefined)?.join(", ") ?? "?"}] spend without this co-signer` });
       }
+      // RemoveSpendingLimit only tightens; allowed.
     }
   }
   return { verdict: worst(reasons), reasons, lamportsOut: "0", tokenOut: {} };

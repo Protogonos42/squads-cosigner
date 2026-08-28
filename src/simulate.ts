@@ -29,6 +29,7 @@ import {
   DecodedConfigTransaction,
   accountKind,
   decodeConfigTransaction,
+  decodeMultisig,
   decodeProposal,
   decodeVaultMessageObject,
   parseCompactVaultMessage,
@@ -36,7 +37,7 @@ import {
   rawVaultTransaction,
 } from "./decode";
 import { TOKEN_PROGRAM, TOKEN_2022_PROGRAM } from "./programs";
-import { Evaluation, Reason, Rules, evaluateConfigTransaction, evaluateVaultMessage, worstVerdict } from "./rules";
+import { ConfigContext, Evaluation, Reason, Rules, evaluateConfigTransaction, evaluateVaultMessage, worstVerdict } from "./rules";
 
 export interface TokenState {
   mint: string;
@@ -306,7 +307,13 @@ export async function checkWithSimulation(addrOrFixtureIx: string | Uint8Array, 
     }
     if ("config" in r) {
       // ConfigTransactions have no inner message to simulate; the static rule decides (REFUSED_CONFIG_CHANGE unless opted in).
-      const ev = evaluateConfigTransaction(r.config, rules);
+      // Fetch the multisig's current time lock so SetTimeLock can be judged; if that fails the rule refuses it.
+      let ctx: ConfigContext = {};
+      try {
+        const msInfo = await conn.getAccountInfo(new PublicKey(r.config.multisig), "confirmed");
+        if (msInfo) ctx = { currentTimeLock: decodeMultisig(msInfo.data).timeLock };
+      } catch { /* leave unknown */ }
+      const ev = evaluateConfigTransaction(r.config, rules, ctx);
       return { address: addrOrFixtureIx, transactionPda: r.transactionPda, proposal: r.proposal, kind: "ConfigTransaction" as const, creator: r.config.creator, ...ev, simulated: false as const };
     }
     raw = r.raw.message;

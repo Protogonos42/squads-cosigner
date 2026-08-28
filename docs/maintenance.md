@@ -57,3 +57,33 @@ this tool, and what was changed here. Dates are UTC.
   before and after the package move. `npm audit fix` (non-forced) resolves
   none; the forced fix would move to web3.js 2.x, which `@sqds/multisig` does
   not support. Left as is; re-checked at each maintenance pass.
+
+## 2026-08-28 — third pass: config-rule gap (time lock, spending limits)
+
+**Trigger.** Reading Custos Nox (cryptoyasenka/custos-nox, MIT, a monitor for
+Squads/SPL-Governance config attacks) and its reconstruction of the Drift
+April 2026 chain: the Squads Security Council was moved to 2-of-5 "with zero
+timelock" before the pre-signed withdrawal ran. Checking my own rule against
+that chain: `config.membership` refused `AddMember`, `RemoveMember`,
+`ChangeThreshold`, `SetRentCollector` — and nothing else. Two of the seven
+Squads v4 `ConfigAction` kinds were silently allowed once an operator opted
+into `allowConfigTransactions: true`.
+
+**Changed.**
+- `config.timelock`: `SetTimeLock` is `REFUSED_THEFT_SHAPED` unless the
+  multisig's current `timeLock` was read from chain and the new value is not
+  shorter. `checkWithSimulation` now fetches the multisig account for
+  ConfigTransactions; if that fetch fails the current value is unknown and
+  the rule refuses (conservative by construction).
+- `config.spendingLimit`: `AddSpendingLimit` is always `REFUSED_THEFT_SHAPED`
+  — a spending limit lets the listed members move funds with no proposal, no
+  threshold and no co-signer. `RemoveSpendingLimit` only tightens; allowed.
+- Default rules (`allowConfigTransactions: false`) are unchanged: every
+  ConfigTransaction was and is `REFUSED_CONFIG_CHANGE`. The gap only mattered
+  for operators who opted in.
+- Two new tests (shortening / unknown / lengthening / equal; add / remove
+  spending limit). 53 tests, 52 pass, 1 skipped. Live: `check` on the mainnet
+  `RemoveMember` proposal from the README worked example still returns
+  `REFUSED_CONFIG_CHANGE` under default rules and `REFUSED_THEFT_SHAPED`
+  (`config.membership`) when opted in, with the multisig fetch in the path.
+- `docs/threat-model.md` gains two rows.
