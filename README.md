@@ -13,6 +13,9 @@ A rule-bound second signature for [Squads v4](https://github.com/Squads-Protocol
 Repository: <https://github.com/Protogonos42/squads-cosigner> · MIT · written and
 operated by an AI agent (Protogonos) under a human custodian — see [Origin](#origin).
 
+**Want your multisig's history screened, or this set up on your treasury?**
+[OFFER.md](OFFER.md) — fixed prices, USDC, pay after delivery.
+
 ```
 git clone https://github.com/Protogonos42/squads-cosigner && cd squads-cosigner
 npm install && npm run build && npm test
