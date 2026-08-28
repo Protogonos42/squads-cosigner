@@ -236,6 +236,62 @@ node bin/squads-cosigner.js pda 5yYzcwpKjZRn15GR5Evd93JpoAs6BrrNzMKUdeUstppa 3
 
 `RPC_URL` or `--rpc` overrides the public mainnet endpoint.
 
+## Worked example: `check` on multisigs that are not mine
+
+`check` is read‑only, so it can be pointed at any live proposal. On
+2026‑08‑28 `node scripts/find-active.js` listed 24,186 Active proposals on
+mainnet in ~2.5 s; three of them, run against `rules.example.json` (the
+author's own rules, which allow only System/Token/ATA/ComputeBudget/Memo/
+stake‑pool and refuse config changes):
+
+```sh
+node bin/squads-cosigner.js check 1A6mT497nvgGdJZLUMbKiQBsjGQdW44ADjCycRN6m64 --rules rules.example.json
+```
+Multisig `6Pgph5yk…`, index 77, VaultTransaction: two `createIdempotent`,
+one call into `dbcij3LW…` (Meteora dynamic bonding curve), one
+`closeAccount`. Simulation succeeds (`simulation.ok: true`, no vault
+lamports out) — and the verdict is still a refusal, because rule screening
+does not trust a program it cannot read:
+```json
+"verdict": "REFUSED_UNSCREENABLE",
+"reasons": [{ "rule": "allowPrograms", "instruction": 2,
+  "detail": "program dbcij3LWUppWqq96dh6gJWwBifmcGfLSB5D4DuSMaqN (unknown) is not in allowPrograms" }]
+```
+exit 3.
+
+```sh
+node bin/squads-cosigner.js check 14o56G7aPCWLZrK74NaFm7RYoM6w7iwMdrGDpqspBPP --rules rules.example.json
+```
+Multisig `B9fGPEBP…`, index 525: one instruction into `jupnw4B6…`
+(`InitOracleConfig`). Two independent reasons, both reported — the program
+is not allowed, and the simulation fails (`Allocate: account … already in
+use`, i.e. the proposal is stale on‑chain):
+```json
+"verdict": "REFUSED_UNSCREENABLE",
+"reasons": [
+  { "rule": "allowPrograms", "instruction": 0, "detail": "program jupnw4B6… (unknown) is not in allowPrograms" },
+  { "rule": "simulation",    "instruction": null, "detail": "simulation failed: {\"InstructionError\":[0,{\"Custom\":0}]} — …" }
+]
+```
+exit 3.
+
+```sh
+node bin/squads-cosigner.js check 179YiisyZV2UbSEumrUWh5vwQRSu7PDgkyRFKLjFP6U --rules rules.example.json
+```
+Multisig `CnZSXK6g…`, index 6, ConfigTransaction with two approvals already:
+```json
+"verdict": "REFUSED_CONFIG_CHANGE",
+"reasons": [{ "rule": "allowConfigTransactions=false", "instruction": null,
+  "detail": "ConfigTransaction with actions [RemoveMember]" }],
+"simulated": false
+```
+exit 3. Config transactions are decided statically; nothing is simulated.
+
+These are other people's proposals and will be executed, rejected or go
+stale; re‑run `find-active.js` for fresh ones. For an APPROVE on record, the
+fixture in Quick start (`vault-tx-2-create.json`, the author's own vault
+depositing into the Jito stake pool) exits 0.
+
 ## Why this and not …
 
 - **Squads Spending Limits** cover plain transfers of one mint per period.
