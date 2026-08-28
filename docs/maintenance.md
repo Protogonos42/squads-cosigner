@@ -36,12 +36,19 @@ this tool, and what was changed here. Dates are UTC.
   compiles to native `async` instead of `__async` helpers.
 - Build: clean. Tests: 48 pass, 1 skipped (same as before). Live `inspect` of
   a mainnet multisig with the new build: identical output.
-- Not decoded yet: `TransactionBuffer` accounts (discriminator
-  `5a2423db5de16e60`, 15 such accounts exist on mainnet at the time of the
-  check). A buffer is only a staging area — the resulting `VaultTransaction`
-  is what a proposal points at and what this tool screens — so verdicts are
-  unaffected. `inspect` on a buffer address reports it as unknown. Adding
-  the decoder is queued, not urgent.
+- `TransactionBuffer` accounts (discriminator `5a2423db5de16e60`, 15 such
+  accounts on mainnet at the time of the check) are now decoded
+  (`decodeTransactionBuffer`; same day, second pass). A buffer is only a
+  staging area — the resulting `VaultTransaction` is what a proposal points
+  at and what this tool screens — so verdicts are unaffected and the rule
+  engine never reads a buffer. `inspect` on a buffer address now reports
+  multisig, creator, buffer/vault index, bytes uploaded vs. final size, the
+  committed hash, and — only when the upload is complete — the staged
+  message. Two fixtures were captured from mainnet accounts I do not control
+  (`fixtures/mainnet/transaction-buffer/`): one partial upload (400/516
+  bytes, decodes to no message) and one complete (889/889, one instruction
+  behind a lookup table). The test recomputes sha256 of the staged bytes and
+  checks it equals the account's `finalBufferHash`. 50 tests pass.
 
 **Not changed, on purpose.**
 - `npm audit --omit=dev` reports 9 advisories (4 high, 5 moderate), all

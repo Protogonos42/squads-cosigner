@@ -5,7 +5,7 @@
  */
 import { Connection, PublicKey } from "@solana/web3.js";
 import * as sq from "@sqds/multisig";
-import { accountKind, decodeAccount, decodeMultisig, decodeProposal, decodeVaultTransaction, decodeConfigTransaction, decodeVaultTransactionCreateIx, pdas, DecodedMultisig, DecodedProposal } from "./decode";
+import { accountKind, decodeAccount, decodeMultisig, decodeProposal, decodeVaultTransaction, decodeConfigTransaction, decodeTransactionBuffer, decodeVaultTransactionCreateIx, pdas, DecodedMultisig, DecodedProposal } from "./decode";
 
 export interface InspectOptions {
   rpcUrl?: string;
@@ -49,6 +49,8 @@ export async function inspectAddress(addr: string, opts: InspectOptions = {}): P
       return { address: addr, transaction: decodeVaultTransaction(info.data) };
     case "ConfigTransaction":
       return { address: addr, transaction: decodeConfigTransaction(info.data) };
+    case "TransactionBuffer":
+      return { address: addr, transactionBuffer: decodeTransactionBuffer(info.data), note: "staging buffer, not a proposal; nothing here is votable or executable" };
     default:
       return { address: addr, kind, note: "decoder not implemented for this account type" };
   }

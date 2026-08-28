@@ -202,7 +202,9 @@ then closed and their rent reclaimed, draining the dogfood vault to zero. Total 
   message per refusal code is refused with that code.
 
 - Byte-level decode of `Multisig`, `Proposal`, `VaultTransaction`,
-  `ConfigTransaction` accounts and of the inner `VaultTransactionMessage`
+  `ConfigTransaction` and `TransactionBuffer` accounts (the last is the
+  staging buffer for oversized messages — named and shown by `inspect`,
+  never consulted for a verdict) and of the inner `VaultTransactionMessage`
   (including from the *creating* `vault_transaction_create` instruction, so
   proposals whose accounts have since been closed can still be examined).
 - Instruction interpreters for System, SPL Token / Token‑2022, ATA, Stake,

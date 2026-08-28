@@ -22,6 +22,7 @@ export type AccountKind =
   | "VaultBatchTransaction"
   | "SpendingLimit"
   | "ProgramConfig"
+  | "TransactionBuffer"
   | "Unknown";
 
 const DISCRIMINATORS: Array<[AccountKind, number[]]> = [
@@ -33,6 +34,7 @@ const DISCRIMINATORS: Array<[AccountKind, number[]]> = [
   ["VaultBatchTransaction", g.vaultBatchTransactionDiscriminator],
   ["SpendingLimit", g.spendingLimitDiscriminator],
   ["ProgramConfig", g.programConfigDiscriminator],
+  ["TransactionBuffer", g.transactionBufferDiscriminator],
 ];
 
 export function accountKind(data: Uint8Array): AccountKind {
@@ -417,7 +419,52 @@ export function decodeVaultTransactionCreateIx(ixData: Uint8Array, tables?: Look
 
 // ---------- dispatch ----------
 
-export type DecodedAccount = DecodedMultisig | DecodedProposal | DecodedVaultTransaction | DecodedConfigTransaction | { kind: AccountKind };
+// ---------- TransactionBuffer (staging account for large vault transactions) ----------
+//
+// A TransactionBuffer is where a creator uploads a message too large for one
+// transaction before turning it into a VaultTransaction. It is not a proposal
+// and nothing in it can be voted on or executed; the rules never see it. It is
+// decoded so `inspect` can name it instead of reporting "unknown".
+
+export interface DecodedTransactionBuffer {
+  kind: "TransactionBuffer";
+  multisig: string;
+  creator: string;
+  bufferIndex: number;
+  vaultIndex: number;
+  finalBufferHash: string; // hex sha256 of the complete message
+  finalBufferSize: number;
+  bufferSize: number; // bytes uploaded so far
+  complete: boolean; // bufferSize === finalBufferSize
+  message: DecodedVaultMessage | null; // decoded only when complete and parseable; never used for verdicts
+}
+
+export function decodeTransactionBuffer(data: Uint8Array): DecodedTransactionBuffer {
+  const [t] = sq.accounts.TransactionBuffer.fromAccountInfo({ data: Buffer.from(data) } as any);
+  const complete = t.buffer.length === t.finalBufferSize;
+  let message: DecodedVaultMessage | null = null;
+  if (complete) {
+    try {
+      message = decodeVaultMessage(t.buffer);
+    } catch {
+      message = null;
+    }
+  }
+  return {
+    kind: "TransactionBuffer",
+    multisig: t.multisig.toBase58(),
+    creator: t.creator.toBase58(),
+    bufferIndex: t.bufferIndex,
+    vaultIndex: t.vaultIndex,
+    finalBufferHash: Buffer.from(t.finalBufferHash).toString("hex"),
+    finalBufferSize: t.finalBufferSize,
+    bufferSize: t.buffer.length,
+    complete,
+    message,
+  };
+}
+
+export type DecodedAccount = DecodedMultisig | DecodedProposal | DecodedVaultTransaction | DecodedConfigTransaction | DecodedTransactionBuffer | { kind: AccountKind };
 
 export function decodeAccount(data: Uint8Array, address?: PublicKey): DecodedAccount {
   const kind = accountKind(data);
@@ -430,6 +477,8 @@ export function decodeAccount(data: Uint8Array, address?: PublicKey): DecodedAcc
       return decodeVaultTransaction(data);
     case "ConfigTransaction":
       return decodeConfigTransaction(data);
+    case "TransactionBuffer":
+      return decodeTransactionBuffer(data);
     default:
       return { kind };
   }
