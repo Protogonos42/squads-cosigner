@@ -1,0 +1,23 @@
+{
+  "network": "devnet",
+  "scenario": "approve-transfer-8",
+  "expectedVerdict": "APPROVE",
+  "kind": "VaultTransaction",
+  "multisig": "5L2ushWE7WTdoRUKHFHA3XXHLtNFFEmqWcHWyjEsXLFs",
+  "vault": "Ck68wAAMna3Dawxyzvn5jhszJF4HNN2jiosQm3jwRjKW",
+  "transactionIndex": "8",
+  "transactionPda": "83jpWWu7Fp1ZTp2rRqAHz38LRujBhuts8KdsLj7Buhi2",
+  "proposalPda": "3jXYBgfu3ha2mANVy9G9BfXyGkYTiZ7ieansKaz8FLhT",
+  "createSignature": "3yUS6uNAsyf5Xwp1pj4ZZMpWWeeAiZy58fQrEzvJiDiHmTPZq24SjwxBcmXs2FL9FAtrUynVJVazEoWDzYs7HB6T",
+  "programId": "SQDS4ep65T869zMMBKyuUq6aD6EgTu8psMjkvj52pCf",
+  "accounts": [
+    "5L2ushWE7WTdoRUKHFHA3XXHLtNFFEmqWcHWyjEsXLFs",
+    "83jpWWu7Fp1ZTp2rRqAHz38LRujBhuts8KdsLj7Buhi2",
+    "AH6sNgPuykjHPzQsjDpETpSgcGvxcfXMwpTB4KJd8cwx",
+    "AH6sNgPuykjHPzQsjDpETpSgcGvxcfXMwpTB4KJd8cwx",
+    "11111111111111111111111111111111"
+  ],
+  "ixDataBase64": "MPpOqNDi2tMAAHgAAAABAQEDrnpW05Ln6jM2w3c4miOjzlLuWoUl5snBq8PD2yofsvmJ2Rxfdv4wnymZq5Dr9CJQWJ7bOBOID0uOe0OoxFJ/VwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQICAAEMAAIAAACAlpgAAAAAAAABEAAAAGFwcHJvdmUtdHJhbnNmZXI=",
+  "fetchedAt": "2026-08-27T20:40:25.947Z",
+  "rpc": "https://api.devnet.solana.com"
+}

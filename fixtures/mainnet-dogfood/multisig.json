@@ -1,0 +1,21 @@
+{
+  "rpc": "https://api.mainnet-beta.solana.com",
+  "proposals": {
+    "1": {
+      "transaction": "CnsQvxAPTBmT71HEFCLoG6V5LGbZwM93TUsgwUQJgGMB",
+      "proposal": "BC7TWwYXETqUPf5fktn8PcWSodzusL88rYaf72Fen1W3",
+      "lamports": "5000000",
+      "createSignature": "488bNEd7LuodHvp6xpv1gC2yRuJn93byurjFa19p1JRzkZSEx14jsv6W8kYdZhrJ3RWHPgbYCJjLMNSCze8oAJ21"
+    }
+  },
+  "multisig": "JDWhhtXcRoRGP5fv9kVoGfYFGYUXRUSpqA4Zvt86qiBT",
+  "vault": "FMAoA21LL1QxgmSwdogaQUHwcViwoPTrnBjis2Ba88v5",
+  "createKey": "FmoZZk9RvPhTYCsix7cQahsPpZGv4ZQJfcErUnsaiktJ",
+  "createSignature": "5y3reKQLgyN8UMFy6tykjQmmz8by5DKNb7aPJnxuGEjjQsP6Z6YuWJdCesenJCearGkJgriDFdkDzcjABz5JnSaz",
+  "members": {
+    "proposer": "49i3Z51a5fxMksja4ui7VmPPtt4Wd2Duw6irnBiNrR26",
+    "tool": "8pT7iRc46iphx5rz8s17NctHR89KspArjEBzNXLkJaLy",
+    "third": "XM5MnZRbgaDhZjbeBwiWQPAKn6QEBiMPDM129NhutAo"
+  },
+  "threshold": "2 of 3"
+}

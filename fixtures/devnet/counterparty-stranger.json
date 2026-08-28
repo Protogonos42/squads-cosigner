@@ -1,0 +1,23 @@
+{
+  "network": "devnet",
+  "scenario": "counterparty-stranger",
+  "expectedVerdict": "REFUSED_COUNTERPARTY",
+  "kind": "VaultTransaction",
+  "multisig": "5L2ushWE7WTdoRUKHFHA3XXHLtNFFEmqWcHWyjEsXLFs",
+  "vault": "Ck68wAAMna3Dawxyzvn5jhszJF4HNN2jiosQm3jwRjKW",
+  "transactionIndex": "2",
+  "transactionPda": "2qkKLMsg1UW2jPTLi51Ca2ryQzaZumJdhN46X5gNM1xj",
+  "proposalPda": "HZ3FAzidYJryATamwkSaEzEGYWevE3qUemZZ6nPzrAaQ",
+  "createSignature": "59K2CyXmxA1KPGBg9B98e3KgnjAVSsqkSLWtmMrSssZJVir3yMpyGsU8heyJm1D7eEUYpHYkwDgcxB7vHxtkK61n",
+  "programId": "SQDS4ep65T869zMMBKyuUq6aD6EgTu8psMjkvj52pCf",
+  "accounts": [
+    "5L2ushWE7WTdoRUKHFHA3XXHLtNFFEmqWcHWyjEsXLFs",
+    "2qkKLMsg1UW2jPTLi51Ca2ryQzaZumJdhN46X5gNM1xj",
+    "AH6sNgPuykjHPzQsjDpETpSgcGvxcfXMwpTB4KJd8cwx",
+    "AH6sNgPuykjHPzQsjDpETpSgcGvxcfXMwpTB4KJd8cwx",
+    "11111111111111111111111111111111"
+  ],
+  "ixDataBase64": "MPpOqNDi2tMAAHgAAAABAQEDrnpW05Ln6jM2w3c4miOjzlLuWoUl5snBq8PD2yofsvmeEyi2x8tyjbFncNz4dC7XPG7TsRhMQCD2lwMSXX94/wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQICAAEMAAIAAACAlpgAAAAAAAABFQAAAGNvdW50ZXJwYXJ0eS1zdHJhbmdlcg==",
+  "fetchedAt": "2026-08-27T20:34:56.523Z",
+  "rpc": "https://api.devnet.solana.com"
+}

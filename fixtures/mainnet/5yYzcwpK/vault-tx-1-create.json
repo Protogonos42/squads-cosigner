@@ -1,0 +1,44 @@
+{
+  "multisig": "5yYzcwpKjZRn15GR5Evd93JpoAs6BrrNzMKUdeUstppa",
+  "transactionIndex": "1",
+  "transactionPda": "G733aTExNLJL7NYhF2uxHCpqAUjE5C9yxW9kC7AuFkDb",
+  "proposalPda": "879RiHXi8Pu9cjntvFGqBGDdvQresrRmjNJM6zxYsoot",
+  "createSignature": "QKMa29yn3Gr2Ld3Fr7qd2Yak4DMyHbdvUQFdXh6F189HLKSdK4Dr1AZDCyDsUaMSLQ7gvZTkv2tkgks483L2wGs",
+  "slot": 442038470,
+  "blockTime": 1787810099,
+  "programId": "SQDS4ep65T869zMMBKyuUq6aD6EgTu8psMjkvj52pCf",
+  "accounts": [
+    "5yYzcwpKjZRn15GR5Evd93JpoAs6BrrNzMKUdeUstppa",
+    "G733aTExNLJL7NYhF2uxHCpqAUjE5C9yxW9kC7AuFkDb",
+    "49i3Z51a5fxMksja4ui7VmPPtt4Wd2Duw6irnBiNrR26",
+    "49i3Z51a5fxMksja4ui7VmPPtt4Wd2Duw6irnBiNrR26",
+    "11111111111111111111111111111111"
+  ],
+  "ixDataBase64": "MPpOqNDi2tMAAHgAAAABAQEDRrjfODtUI1cQznUVo+LXsxsESG1cI90JKoy+Rj/fIlUuzh2piv8Uaa7iOQgIGCPiiKbpiBGix8d3aA01AgtcNwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQICAAEMAAIAAABAS0wAAAAAAAABPgAAAHByb3RvZ29ub3MgdGVzdCB0cmFuc2ZlcjogdmF1bHQtPmZsb2F0LCBwcm92aW5nIDItc2lnIHBpcGVsaW5l",
+  "allSignatures": [
+    {
+      "signature": "QKMa29yn3Gr2Ld3Fr7qd2Yak4DMyHbdvUQFdXh6F189HLKSdK4Dr1AZDCyDsUaMSLQ7gvZTkv2tkgks483L2wGs",
+      "slot": 442038470,
+      "err": null,
+      "blockTime": 1787810099
+    },
+    {
+      "signature": "5ymQ9qy5G4gQEWY8GVzjqDwtLkGw6DAHX7Ptx9wPHBRrmvtMDPKxCPZftuXRguji9kETfQ8tyu9s5LLq8f9JTJVd",
+      "slot": 442038537,
+      "err": null,
+      "blockTime": 1787810123
+    },
+    {
+      "signature": "2VnHqmKQQbpqELMpbVzMdfmxWXmjuPWvnaN8jpcoGh3nzTFNA49bNuUeszcmPziRty62onnm9oHxVSU8tVUvEdB1",
+      "slot": 442040993,
+      "err": null,
+      "blockTime": 1787811017
+    }
+  ],
+  "fetchedAt": "2026-08-27T18:24:02.752Z",
+  "rpc": "https://api.mainnet-beta.solana.com",
+  "vaultIndex": 0,
+  "ephemeralSigners": 0,
+  "memo": "protogonos test transfer: vault->float, proving 2-sig pipeline",
+  "innerMessageBase64": "AQEBA0a43zg7VCNXEM51FaPi17MbBEhtXCPdCSqMvkY/3yJVLs4dqYr/FGmu4jkICBgj4oim6YgRosfHd2gNNQILXDcAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAECAgABDAACAAAAQEtMAAAAAAAA"
+}

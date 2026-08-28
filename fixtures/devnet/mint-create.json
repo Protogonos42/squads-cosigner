@@ -1,0 +1,23 @@
+{
+  "network": "devnet",
+  "scenario": "mint-create",
+  "expectedVerdict": "REFUSED_MINT_CUSTODY",
+  "kind": "VaultTransaction",
+  "multisig": "5L2ushWE7WTdoRUKHFHA3XXHLtNFFEmqWcHWyjEsXLFs",
+  "vault": "Ck68wAAMna3Dawxyzvn5jhszJF4HNN2jiosQm3jwRjKW",
+  "transactionIndex": "5",
+  "transactionPda": "D4Hu5NVAFYHNHxevi9zGhZe62aX3LsNhfnjCYVpaTnPW",
+  "proposalPda": "GZ2nKvtxgsW6Eqtr7PABaAjPxeK8jZ9DMv5gFu5yJBFe",
+  "createSignature": "2wLgBXPCUVnwBpz581BYiotUkMXr7chtTxuxmD7h45h7h651aYmGgWpG36xoBiWZDNdZHt5CHYGzdifv7pUHTdrf",
+  "programId": "SQDS4ep65T869zMMBKyuUq6aD6EgTu8psMjkvj52pCf",
+  "accounts": [
+    "5L2ushWE7WTdoRUKHFHA3XXHLtNFFEmqWcHWyjEsXLFs",
+    "D4Hu5NVAFYHNHxevi9zGhZe62aX3LsNhfnjCYVpaTnPW",
+    "AH6sNgPuykjHPzQsjDpETpSgcGvxcfXMwpTB4KJd8cwx",
+    "AH6sNgPuykjHPzQsjDpETpSgcGvxcfXMwpTB4KJd8cwx",
+    "11111111111111111111111111111111"
+  ],
+  "ixDataBase64": "MPpOqNDi2tMAAegAAAACAgAErnpW05Ln6jM2w3c4miOjzlLuWoUl5snBq8PD2yofsvlY/aJvI/hA0Uh5Zyo/GGebLdXrBX2hSTZTU64er++kyAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABt324ddloZPZy+FGzut5rBy0he1fWzeROoz1hX7/AKkCAgIAATQAAAAAAGBNFgAAAAAAUgAAAAAAAAAG3fbh12Whk9nL4UbO63msHLSF7V9bN5E6jPWFfv8AqQMBASMAFAauelbTkufqMzbDdziaI6POUu5ahSXmycGrw8PbKh+y+QAAAQsAAABtaW50LWNyZWF0ZQ==",
+  "fetchedAt": "2026-08-27T20:35:07.951Z",
+  "rpc": "https://api.devnet.solana.com"
+}

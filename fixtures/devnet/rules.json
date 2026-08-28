@@ -1,0 +1,25 @@
+{
+  "$comment": "Devnet rig rules: the tool co-signs only System/Token/ATA/ComputeBudget/Memo, only to the proposer, ≤0.1 SOL per proposal.",
+  "vault": "Ck68wAAMna3Dawxyzvn5jhszJF4HNN2jiosQm3jwRjKW",
+  "multisig": "5L2ushWE7WTdoRUKHFHA3XXHLtNFFEmqWcHWyjEsXLFs",
+  "allowPrograms": [
+    "11111111111111111111111111111111",
+    "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+    "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+    "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL",
+    "ComputeBudget111111111111111111111111111111",
+    "MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr"
+  ],
+  "denyPrograms": [],
+  "allowDestinations": [
+    "AH6sNgPuykjHPzQsjDpETpSgcGvxcfXMwpTB4KJd8cwx"
+  ],
+  "denyDestinations": [],
+  "maxLamportsOut": "100000000",
+  "maxTokenOut": {
+    "*": "1000000000"
+  },
+  "strictLookupTables": true,
+  "allowConfigTransactions": false,
+  "allowVaultTokenAccounts": true
+}

@@ -1,0 +1,25 @@
+{
+  "$comment": "Mainnet dogfood rules: the tool co-signs only System/Token/ATA/ComputeBudget/Memo, only to the proposer, ≤0.01 SOL per proposal.",
+  "vault": "FMAoA21LL1QxgmSwdogaQUHwcViwoPTrnBjis2Ba88v5",
+  "multisig": "JDWhhtXcRoRGP5fv9kVoGfYFGYUXRUSpqA4Zvt86qiBT",
+  "allowPrograms": [
+    "11111111111111111111111111111111",
+    "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+    "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+    "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL",
+    "ComputeBudget111111111111111111111111111111",
+    "MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr"
+  ],
+  "denyPrograms": [],
+  "allowDestinations": [
+    "49i3Z51a5fxMksja4ui7VmPPtt4Wd2Duw6irnBiNrR26"
+  ],
+  "denyDestinations": [],
+  "maxLamportsOut": "10000000",
+  "maxTokenOut": {
+    "*": "0"
+  },
+  "strictLookupTables": true,
+  "allowConfigTransactions": false,
+  "allowVaultTokenAccounts": false
+}

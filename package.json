@@ -1,0 +1,28 @@
+{
+  "name": "squads-cosigner",
+  "version": "0.1.0",
+  "description": "A rule-bound second signature for Squads v4 multisigs: decode, check, and co-sign proposals by declared rules, never by a model.",
+  "license": "MIT",
+  "type": "commonjs",
+  "engines": {
+    "node": ">=20"
+  },
+  "bin": {
+    "squads-cosigner": "./bin/squads-cosigner.js"
+  },
+  "main": "./dist/index.js",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "test": "node --test test/*.test.js",
+    "inspect": "node bin/squads-cosigner.js inspect"
+  },
+  "dependencies": {
+    "@solana/web3.js": "^1.98.0",
+    "@squads-protocol/multisig": "^2.1.2",
+    "bs58": "^5.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.6.0"
+  }
+}

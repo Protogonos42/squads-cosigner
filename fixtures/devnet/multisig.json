@@ -1,0 +1,86 @@
+{
+  "rpc": "https://api.devnet.solana.com",
+  "proposals": {
+    "approve-transfer": {
+      "transactionIndex": "1",
+      "proposalPda": "Hj8daLpWQktyTvCG8fRtYzBiCzQLSXMbEFDBSEF5FghA",
+      "expectedVerdict": "APPROVE",
+      "createSignature": "43vBz38bkC4eMGAnqVdAXFdVYwMGaxi6Vp7oQe1LHZn91fbKWbDNrYXFFDrDWr8KwyfjQesb2rewgjbyxxD2iv2U"
+    },
+    "counterparty-stranger": {
+      "transactionIndex": "2",
+      "proposalPda": "HZ3FAzidYJryATamwkSaEzEGYWevE3qUemZZ6nPzrAaQ",
+      "expectedVerdict": "REFUSED_COUNTERPARTY",
+      "createSignature": "59K2CyXmxA1KPGBg9B98e3KgnjAVSsqkSLWtmMrSssZJVir3yMpyGsU8heyJm1D7eEUYpHYkwDgcxB7vHxtkK61n"
+    },
+    "over-cap": {
+      "transactionIndex": "3",
+      "proposalPda": "62euLR5dH1ue6LXVD4NvaeAfbLxJi1iLQaxc83EhXGAk",
+      "expectedVerdict": "REFUSED_OVER_CAP",
+      "createSignature": "5ZmZP1yRckVhxMQuomFfzq2ZMMpaZ5dmiMyQaNCzDeWhKQeu1aZ9hqV9JTneaNmSpQ85BtEL5J63Xj6b6QUopea4"
+    },
+    "theft-assign": {
+      "transactionIndex": "4",
+      "proposalPda": "6tuBWVrPmKveJzdPZRLQ8o38PZW1qcXfyAkBP2KVFW5T",
+      "expectedVerdict": "REFUSED_THEFT_SHAPED",
+      "createSignature": "5PX3TPRiUJ63enTXuPWpR7nQ7iu6FPaxRbWBLJCe5rWBUi8EsPpmoofTGjF85pvHcvm1qU79TTxoQgDyqoUWDW4x"
+    },
+    "mint-create": {
+      "transactionIndex": "5",
+      "proposalPda": "GZ2nKvtxgsW6Eqtr7PABaAjPxeK8jZ9DMv5gFu5yJBFe",
+      "expectedVerdict": "REFUSED_MINT_CUSTODY",
+      "createSignature": "2wLgBXPCUVnwBpz581BYiotUkMXr7chtTxuxmD7h45h7h651aYmGgWpG36xoBiWZDNdZHt5CHYGzdifv7pUHTdrf"
+    },
+    "unknown-program": {
+      "transactionIndex": "6",
+      "proposalPda": "9pVbJbKhzAN24NXbiNtUggJVcgkibkWea6kPwXkwgGfV",
+      "expectedVerdict": "REFUSED_UNSCREENABLE",
+      "createSignature": "4LxLXjBgSuboujfSnqnNgodYxjMrDBAZmoqvUbf8uhyEfNrvhJpqWMnbkhYcQvus8MJ6EHECnHC3cuQdgWDqj5Cp"
+    },
+    "config-add-member": {
+      "transactionIndex": "7",
+      "proposalPda": "AgibPrMEsWX2vGp8HVysm2BKC12nUsTEjesVQaa5WBmc",
+      "expectedVerdict": "REFUSED_CONFIG_CHANGE",
+      "createSignature": "3cSxH5wGPMaMZkWRhFr3c6urfuosEeMVfzs4PHxudcpxuufYXkReGmRakSUu73TsVEge2CJRg5MHgWa9tZBRczdi"
+    },
+    "approve-transfer-8": {
+      "transactionIndex": "8",
+      "proposalPda": "3jXYBgfu3ha2mANVy9G9BfXyGkYTiZ7ieansKaz8FLhT",
+      "expectedVerdict": "APPROVE",
+      "createSignature": "3yUS6uNAsyf5Xwp1pj4ZZMpWWeeAiZy58fQrEzvJiDiHmTPZq24SjwxBcmXs2FL9FAtrUynVJVazEoWDzYs7HB6T"
+    }
+  },
+  "multisig": "5L2ushWE7WTdoRUKHFHA3XXHLtNFFEmqWcHWyjEsXLFs",
+  "vault": "Ck68wAAMna3Dawxyzvn5jhszJF4HNN2jiosQm3jwRjKW",
+  "createKey": "3cj6no3aif86BgtTUBX4KfYzBxCWuJHD1pQY9Q999Lqg",
+  "createSignature": "31JENsoCDX9p4xWppf1mY32WtmYqC9PkqDN7ZwdxixhCFViRmwTdEJpavKuS4onLqiW9EQbBTX68V57mKHCJsmEe",
+  "members": {
+    "proposer": "AH6sNgPuykjHPzQsjDpETpSgcGvxcfXMwpTB4KJd8cwx",
+    "tool": "EtYHgty6s9iBeiFQtzr7fuihVitFf9jV6YH5UTd5WPWW",
+    "third": "CJzmgC1fv7mt6HNaphmkw4Ydj36pFbULMhpaXnmgb4pK"
+  },
+  "threshold": "2 of 3",
+  "e2e": {
+    "date": "2026-08-27",
+    "toolKey": "EtYHgty6s9iBeiFQtzr7fuihVitFf9jV6YH5UTd5WPWW",
+    "approve1": "5BNCz9fvq7QUKE4NmBMA6Rp9TAWydBGFj3XA8bK8TtqgRLebMc6vTNtRhHW3qeMrDoDPZpKVyUhSc8ZAo8xRDx8t",
+    "execute1": "29DuA9BiHxbCyZU61Kb42VYHukUFvwq9gTNGf8nNRrjyCRZLDiDd3ECkkDDz5fhW2XLZdgW8iJCNiXMNywdtRzPU",
+    "refusedToApprove2": "REFUSED_COUNTERPARTY (no signature produced)",
+    "reject2": "3PRzmxA39HnYp5S5UQZZ77MQZsiqXBYcBFAfpHyMcdiiP6YMfajNaGH4ZLjnZgsc7nYLBB889Hn8QESXsP52cLyV",
+    "note": "proposal 1 Executed (vault 0.30→0.29 SOL); proposal 2 Active with 1 approve (proposer) + 1 reject (tool)"
+  },
+  "daemon": {
+    "date": "2026-08-27",
+    "command": "watch --rounds 2 --interval 10000 --log fixtures/devnet/audit.jsonl",
+    "approve8": "33A8DCZqBwjpEzccmCV92pzgpAMmBbg3DYVn1ZNSjFrNvRgRDURgjSrFFpDBdfSw6LoUXKZ8r9QcisvrE6eU4f8Q",
+    "execute8": "4EnJ96jAuU6pofz3hF5RgDno9zsU5mfWKPpLj3boDCYHD5SkR93xVWpH12HiRAbyr4nYArdazrsJ3v9711j49mYU",
+    "refusedWithoutSigning": [
+      3,
+      4,
+      5,
+      6,
+      7
+    ],
+    "auditLog": "fixtures/devnet/audit.jsonl (7 entries, verify-log ok)"
+  }
+}

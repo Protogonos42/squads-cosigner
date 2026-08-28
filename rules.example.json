@@ -1,0 +1,23 @@
+{
+  "$comment": "Rules for the author's own vault. The co-signer approves only what passes every rule here.",
+  "vault": "5m53MMnwNTVUQQqbqEnuUJzb8iyti6Y3eX7nMq5ZmFuv",
+  "allowPrograms": [
+    "11111111111111111111111111111111",
+    "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+    "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL",
+    "ComputeBudget111111111111111111111111111111",
+    "MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr",
+    "SPoo1Ku8WFXoNDMHPsrGSTSG1Y47rzgn41SLUNakuHy"
+  ],
+  "denyPrograms": ["BPFLoaderUpgradeab1e11111111111111111111111"],
+  "allowDestinations": [
+    "49i3Z51a5fxMksja4ui7VmPPtt4Wd2Duw6irnBiNrR26",
+    "Jito4APyf642JPZPx3hGc6WWJ8zPKtRbRs4P815Awbb"
+  ],
+  "denyDestinations": [],
+  "maxLamportsOut": "500000000",
+  "maxTokenOut": { "*": "1000000000" },
+  "strictLookupTables": true,
+  "allowConfigTransactions": false,
+  "allowVaultTokenAccounts": true
+}

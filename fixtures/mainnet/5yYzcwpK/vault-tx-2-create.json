@@ -1,0 +1,44 @@
+{
+  "multisig": "5yYzcwpKjZRn15GR5Evd93JpoAs6BrrNzMKUdeUstppa",
+  "transactionIndex": "2",
+  "transactionPda": "EsdF4y6Ed8c5W6f87nxeQNmZCQuVm1sTLRNM27RohwZC",
+  "proposalPda": "CcdB7uRfLgG83RGqKDFuK5gW9P69YrGCriAdHkmitJ9U",
+  "createSignature": "2MoYdRjBHzTazeXYyEVk5Z3K86wTQkjNmADZiETpTXUtatYWwiNkjRg6jKuktsivzeNXcREhv7QKHv61HVVypUgF",
+  "slot": 442042945,
+  "blockTime": 1787811730,
+  "programId": "SQDS4ep65T869zMMBKyuUq6aD6EgTu8psMjkvj52pCf",
+  "accounts": [
+    "5yYzcwpKjZRn15GR5Evd93JpoAs6BrrNzMKUdeUstppa",
+    "EsdF4y6Ed8c5W6f87nxeQNmZCQuVm1sTLRNM27RohwZC",
+    "49i3Z51a5fxMksja4ui7VmPPtt4Wd2Duw6irnBiNrR26",
+    "49i3Z51a5fxMksja4ui7VmPPtt4Wd2Duw6irnBiNrR26",
+    "11111111111111111111111111111111"
+  ],
+  "ixDataBase64": "MPpOqNDi2tMAAIgBAAABAQULRrjfODtUI1cQznUVo+LXsxsESG1cI90JKoy+Rj/fIlX42egwwmCUbb7qGe/ywhgy6l0HsLYpZw93J4yjqxJKNvzRQemDLK8QrZF0lcoPJxtbKTzUcCfqc3AH7UDrOaC9BIo+CMO0lb4X9FQn2JvsW4DH4mlcGGTXZ0PbOb7TRtaep2j+32RMiq6bjiGIrdBrxVD79xbIIrnOY8d4PZUuH3aPKKOjsvtS81pYp+WLWVxEx3jtASz3Gqb5wjZwDGQnjJclj04kifG7PRApFI4NgwtaE5na/xCEBI572Nvp+FkAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAbd9uHXZaGT2cvhRs7reawctIXtX1s3kTqM9YV+/wCpBoFO1Mr2ihdGcv2shgMaY+hOoV76HUS3IpP229sAFlBU5Z4kwFGooUp7HpeX8OEs36dJAhZlMZWmpRKm8WZgKwIGBgABAAIHCAEAAQkKAwoEAAEFAQIHCAkADgCE1xcAAAAAAAE8AAAAcHJvdG9nb25vczogZGVwb3NpdCB2YXVsdCBTT0wgaW50byBKaXRvIHN0YWtlIHBvb2wgKEppdG9TT0wp",
+  "allSignatures": [
+    {
+      "signature": "2MoYdRjBHzTazeXYyEVk5Z3K86wTQkjNmADZiETpTXUtatYWwiNkjRg6jKuktsivzeNXcREhv7QKHv61HVVypUgF",
+      "slot": 442042945,
+      "err": null,
+      "blockTime": 1787811730
+    },
+    {
+      "signature": "jpowZD7225DJea2wJoHmdXb8UMuNafFYfqM56qN1BUDmzpAg5EbXv27heFAQDKzcZYmCriybsCZSgHhaHpQwM31",
+      "slot": 442045035,
+      "err": null,
+      "blockTime": 1787812497
+    },
+    {
+      "signature": "22KmTWYBWsoYnZBYWBZXpwzLA86Au3S3TsQrU1gpTaGoEtqkBQjm6K1HBDjiFXD7NsRA9Qdsq5x8NNqGK7puQ4Dt",
+      "slot": 442046541,
+      "err": null,
+      "blockTime": 1787813043
+    }
+  ],
+  "fetchedAt": "2026-08-27T18:24:03.345Z",
+  "rpc": "https://api.mainnet-beta.solana.com",
+  "vaultIndex": 0,
+  "ephemeralSigners": 0,
+  "memo": "protogonos: deposit vault SOL into Jito stake pool (JitoSOL)",
+  "innerMessageBase64": "AQEFC0a43zg7VCNXEM51FaPi17MbBEhtXCPdCSqMvkY/3yJV+NnoMMJglG2+6hnv8sIYMupdB7C2KWcPdyeMo6sSSjb80UHpgyyvEK2RdJXKDycbWyk81HAn6nNwB+1A6zmgvQSKPgjDtJW+F/RUJ9ib7FuAx+JpXBhk12dD2zm+00bWnqdo/t9kTIqum44hiK3Qa8VQ+/cWyCK5zmPHeD2VLh92jyijo7L7UvNaWKfli1lcRMd47QEs9xqm+cI2cAxkJ4yXJY9OJInxuz0QKRSODYMLWhOZ2v8QhASOe9jb6fhZAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAG3fbh12Whk9nL4UbO63msHLSF7V9bN5E6jPWFfv8AqQaBTtTK9ooXRnL9rIYDGmPoTqFe+h1EtyKT9tvbABZQVOWeJMBRqKFKex6Xl/DhLN+nSQIWZTGVpqUSpvFmYCsCBgYAAQACBwgBAAEJCgMKBAABBQECBwgJAA4AhNcXAAAAAAA="
+}
