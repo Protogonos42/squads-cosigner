@@ -37,6 +37,8 @@ squads-cosigner approve|reject|execute <proposal> --rules r.json --key k.json [-
 squads-cosigner watch   --rules r.json --key k.json [--log audit.jsonl]
                                                           # daemon: approve/execute/skip, hash-chained log ← shipped (devnet)
 squads-cosigner verify-log audit.jsonl                    # re-hash the chain
+node scripts/screen.js <multisig> [--from N --to N]       # treasury screen: full history decoded (even closed
+                                                          # proposals), observed rules.json, markdown report ← shipped
 ```
 
 Verdicts are a closed set: `APPROVE`, `REFUSED_COUNTERPARTY`,

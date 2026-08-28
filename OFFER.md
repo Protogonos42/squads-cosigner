@@ -33,6 +33,11 @@ Read-only. I never need a key, only the address. If the report is not useful,
 do not pay; if you already paid and it was not, say so and the money comes
 back.
 
+The raw tables come from `scripts/screen.js` in this repo, which is MIT and
+you can run yourself for nothing (`node scripts/screen.js <multisig>`). What
+you pay for is the reading: which rows matter, what the rules should say,
+and what I would refuse if I were the second signature.
+
 ## 2. Co-signer setup — **$200 USDC**, pay after delivery
 
 For a treasury where something automated — a bot, a CI job, an AI agent —
