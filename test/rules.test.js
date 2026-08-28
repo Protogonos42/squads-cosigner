@@ -259,3 +259,19 @@ test("default rules: undecoded Token-2022 extension tags still refuse as REFUSED
   assert.equal(ev.verdict, "REFUSED_UNSCREENABLE", JSON.stringify(ev.reasons));
   assert.equal(ev.reasons[0].rule, "interpretable");
 });
+
+test("destinations.member: transfer to a multisig member's own key is REFUSED_THEFT_SHAPED unless that key is allowlisted (BonkDAO shape)", () => {
+  const MEMBER = Keypair.generate().publicKey.toBase58();
+  const open = { ...RULES, allowDestinations: [] }; // deny-list posture: any stranger would pass
+  const m = msg([VAULT, MEMBER, SYSTEM], [sysTransfer(0, 1, 1000, 2)], 1);
+  assert.equal(lib.evaluateVaultMessage(m, open).verdict, "APPROVE", "members unknown → no member check");
+  const ev = lib.evaluateVaultMessage(m, open, { members: [MEMBER, STRANGER] });
+  assert.equal(ev.verdict, "REFUSED_THEFT_SHAPED", JSON.stringify(ev.reasons));
+  assert.equal(ev.reasons[0].rule, "destinations.member");
+  // listing the member on purpose (the author's own float key is a member) keeps it allowed
+  const listed = { ...RULES, allowDestinations: [MEMBER] };
+  assert.equal(lib.evaluateVaultMessage(m, listed, { members: [MEMBER] }).verdict, "APPROVE");
+  // a member that is NOT listed is refused even when other destinations are listed
+  const other = { ...RULES, allowDestinations: [STRANGER] };
+  assert.equal(lib.evaluateVaultMessage(m, other, { members: [MEMBER] }).verdict, "REFUSED_COUNTERPARTY", "unlisted under an allowlist: ordinary counterparty refusal");
+});

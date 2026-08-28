@@ -91,18 +91,30 @@ const worst = worstVerdict;
 export interface EvaluateOptions {
   /** true when a successful simulation backs this evaluation (enables `trustSimulationForAllowedPrograms`) */
   simulated?: boolean;
+  /**
+   * The multisig's member keys, if the caller fetched them. A transfer whose destination is a member's own
+   * key is refused as theft-shaped unless that key is explicitly in `allowDestinations` — the BonkDAO
+   * (July 2026) shape: a proposer voting treasury into their own wallet. Unknown members → no member check.
+   */
+  members?: string[];
 }
 
 function isVaultOrOwned(key: string | null, rules: Rules, vaultOwnedAccounts: Set<string>): boolean {
   return key !== null && (key === rules.vault || vaultOwnedAccounts.has(key));
 }
 
-function destinationAllowed(key: string | null, rules: Rules, vaultOwned: Set<string>): { ok: boolean; why: string } {
-  if (key === null) return { ok: false, why: "destination account missing" };
-  if (rules.denyDestinations?.includes(key)) return { ok: false, why: `destination ${key} is in denyDestinations` };
+type DestinationCheck = { ok: true; why: string } | { ok: false; why: string; verdict: Verdict; rule: string };
+
+function destinationAllowed(key: string | null, rules: Rules, vaultOwned: Set<string>, members?: string[]): DestinationCheck {
+  if (key === null) return { ok: false, why: "destination account missing", verdict: "REFUSED_COUNTERPARTY", rule: "destinations" };
+  if (rules.denyDestinations?.includes(key)) return { ok: false, why: `destination ${key} is in denyDestinations`, verdict: "REFUSED_COUNTERPARTY", rule: "destinations" };
   if (isVaultOrOwned(key, rules, vaultOwned)) return { ok: true, why: "destination is the vault or a vault-owned account" };
   if (rules.allowDestinations && rules.allowDestinations.length > 0 && !rules.allowDestinations.includes(key)) {
-    return { ok: false, why: `destination ${key} is not in allowDestinations` };
+    return { ok: false, why: `destination ${key} is not in allowDestinations`, verdict: "REFUSED_COUNTERPARTY", rule: "destinations" };
+  }
+  // A member paying themselves is theft-shaped unless the operator listed that key on purpose.
+  if (members?.includes(key) && !rules.allowDestinations?.includes(key)) {
+    return { ok: false, why: `destination ${key} is a member of this multisig and is not in allowDestinations`, verdict: "REFUSED_THEFT_SHAPED", rule: "destinations.member" };
   }
   return { ok: true, why: "destination permitted" };
 }
@@ -260,8 +272,8 @@ export function evaluateVaultMessage(msg: DecodedVaultMessage, rules: Rules, opt
         lamportsOut += amt;
         const isSelfTokenAccount = allowVaultTokenAccounts && e.op.startsWith("spl-associated-token-account.create") && e.detail.owner === rules.vault;
         if (!isSelfTokenAccount) {
-          const d = destinationAllowed(to, rules, vaultOwned);
-          if (!d.ok) reasons.push({ verdict: "REFUSED_COUNTERPARTY", rule: "destinations", instruction: n, detail: `${e.op}: ${d.why}` });
+          const d = destinationAllowed(to, rules, vaultOwned, opts.members);
+          if (!d.ok) reasons.push({ verdict: d.verdict, rule: d.rule, instruction: n, detail: `${e.op}: ${d.why}` });
         }
       }
     }
@@ -273,15 +285,15 @@ export function evaluateVaultMessage(msg: DecodedVaultMessage, rules: Rules, opt
       const authority = (e.detail.authority ?? null) as string | null;
       if (authority === rules.vault || isVaultOrOwned(src, rules, vaultOwned)) {
         tokenOut[mint] = (tokenOut[mint] ?? 0n) + amt;
-        const d = destinationAllowed(dst, rules, vaultOwned);
-        if (!d.ok) reasons.push({ verdict: "REFUSED_COUNTERPARTY", rule: "destinations", instruction: n, detail: `${e.op}: ${d.why}` });
+        const d = destinationAllowed(dst, rules, vaultOwned, opts.members);
+        if (!d.ok) reasons.push({ verdict: d.verdict, rule: d.rule, instruction: n, detail: `${e.op}: ${d.why}` });
       }
     }
     if (e.op === "spl-stake-pool.withdrawSol") {
       const amt = typeof e.detail.poolTokens === "string" ? BigInt(e.detail.poolTokens) : 0n;
       tokenOut["*"] = (tokenOut["*"] ?? 0n) + amt;
-      const d = destinationAllowed((e.detail.to ?? null) as string | null, rules, vaultOwned);
-      if (!d.ok) reasons.push({ verdict: "REFUSED_COUNTERPARTY", rule: "destinations", instruction: n, detail: `${e.op}: ${d.why}` });
+      const d = destinationAllowed((e.detail.to ?? null) as string | null, rules, vaultOwned, opts.members);
+      if (!d.ok) reasons.push({ verdict: d.verdict, rule: d.rule, instruction: n, detail: `${e.op}: ${d.why}` });
     }
   }
 

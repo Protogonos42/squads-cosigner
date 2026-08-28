@@ -300,6 +300,7 @@ export async function checkWithSimulation(addrOrFixtureIx: string | Uint8Array, 
   const conn = opts.connection ?? new Connection(opts.rpcUrl ?? "https://api.mainnet-beta.solana.com", "confirmed");
   let raw: sq.generated.VaultTransactionMessage;
   let meta: Record<string, unknown> = {};
+  let multisigAddr: string | undefined;
   if (typeof addrOrFixtureIx === "string") {
     const r = await fetchRawVaultTransaction(conn, addrOrFixtureIx);
     if ("error" in r) {
@@ -317,6 +318,7 @@ export async function checkWithSimulation(addrOrFixtureIx: string | Uint8Array, 
       return { address: addrOrFixtureIx, transactionPda: r.transactionPda, proposal: r.proposal, kind: "ConfigTransaction" as const, creator: r.config.creator, ...ev, simulated: false as const };
     }
     raw = r.raw.message;
+    multisigAddr = r.raw.multisig.toBase58();
     meta = { address: addrOrFixtureIx, transactionPda: r.transactionPda, proposal: r.proposal, vaultIndex: r.raw.vaultIndex, creator: r.raw.creator.toBase58() };
     // Default fee payer: the proposal's creator — a member who would really pay on execution.
     // Vaults often hold no native SOL, and a payer with no lamports makes the RPC answer AccountNotFound.
@@ -325,7 +327,16 @@ export async function checkWithSimulation(addrOrFixtureIx: string | Uint8Array, 
     raw = parseCompactVaultMessage(addrOrFixtureIx);
   }
   const sim = await simulateVaultMessage(raw, rules.vault, { ...opts, connection: conn });
-  const staticEval = evaluateVaultMessage(sim.message, rules, { simulated: sim.ok });
+  // Fetch the member list so a transfer to a member's own key can be refused (`destinations.member`).
+  // If the fetch fails the check is skipped, not failed: members unknown → allowDestinations alone governs.
+  let members: string[] | undefined;
+  if (multisigAddr) {
+    try {
+      const msInfo = await conn.getAccountInfo(new PublicKey(multisigAddr), "confirmed");
+      if (msInfo) members = decodeMultisig(msInfo.data).members.map((m) => m.key);
+    } catch { /* leave unknown */ }
+  }
+  const staticEval = evaluateVaultMessage(sim.message, rules, { simulated: sim.ok, members });
   const merged = applySimulation(staticEval, sim, rules);
   const { message: _m, accounts, logs, ...simSummary } = sim;
   return { ...meta, ...merged, simulation: { ...simSummary, accounts: accounts.filter((a) => a.preLamports !== a.postLamports || a.preToken?.amount !== a.postToken?.amount || a.preOwner !== a.postOwner), logs: sim.ok ? logs.slice(-5) : logs } };
