@@ -215,7 +215,9 @@ export function evaluateVaultMessage(msg: DecodedVaultMessage, rules: Rules, opt
       // Any authority change on the vault itself or a vault-owned account is a handoff.
       const target = (e.detail.account ?? e.detail.source ?? e.detail.stakeAccount ?? null) as string | null;
       const involvesVault = isVaultOrOwned(target, rules, vaultOwned) || ix.accounts.some((a) => a.isSigner && a.pubkey === rules.vault);
-      if (involvesVault) reasons.push({ verdict: "REFUSED_THEFT_SHAPED", rule: "no-authority-handoff", instruction: n, detail: `${e.op} on ${target ?? "vault-signed account"} would hand control to another key` });
+      // Setting the authority to the vault itself (e.g. initialising the vault's own nonce account) hands nothing over.
+      const toVault = e.detail.newAuthority === rules.vault;
+      if (involvesVault && !toVault) reasons.push({ verdict: "REFUSED_THEFT_SHAPED", rule: "no-authority-handoff", instruction: n, detail: `${e.op} on ${target ?? "vault-signed account"} would hand control to another key` });
     }
     if (e.op === "system.assign") {
       reasons.push({ verdict: "REFUSED_THEFT_SHAPED", rule: "no-assign", instruction: n, detail: "system.assign changes an account's owner program" });
@@ -244,7 +246,8 @@ export function evaluateVaultMessage(msg: DecodedVaultMessage, rules: Rules, opt
       const from = (e.detail.from ?? e.detail.payer ?? e.detail.account ?? null) as string | null;
       const to = (e.detail.to ?? e.detail.destination ?? e.detail.newAccount ?? e.detail.ata ?? e.detail.stakePool ?? null) as string | null;
       const amt = typeof e.detail.lamports === "string" ? BigInt(e.detail.lamports) : 0n;
-      if (from === rules.vault || isVaultOrOwned(from, rules, vaultOwned)) {
+      // Lamports moved under the vault's own signature (e.g. a nonce withdrawal it authorises) are the vault's.
+      if (from === rules.vault || isVaultOrOwned(from, rules, vaultOwned) || e.detail.authority === rules.vault) {
         lamportsOut += amt;
         const isSelfTokenAccount = allowVaultTokenAccounts && e.op.startsWith("spl-associated-token-account.create") && e.detail.owner === rules.vault;
         if (!isSelfTokenAccount) {

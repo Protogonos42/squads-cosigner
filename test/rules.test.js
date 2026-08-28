@@ -177,3 +177,37 @@ test("REFUSED_COUNTERPARTY beats REFUSED_OVER_CAP; CONFIG beats everything", () 
 test("validateRules rejects a rules file without a vault", () => {
   assert.throws(() => lib.validateRules({ allowPrograms: [] }), /vault/);
 });
+
+// --- durable-nonce instructions (System tags 4–7, 12) ---
+// Before these were decoded they fell into the `interpretable` fallback: refused by default, but
+// unread under trustSimulationForAllowedPrograms. A nonce authority handoff is a theft shape.
+test("REFUSED_THEFT_SHAPED: system.authorizeNonceAccount hands a vault-signed nonce to a stranger", () => {
+  const nonce = Keypair.generate().publicKey.toBase58();
+  const data = Buffer.concat([u32(7), Keypair.generate().publicKey.toBuffer()]);
+  const m = msg([VAULT, nonce, SYSTEM], [{ programIdIndex: 2, accountIndexes: [1, 0], data }], 1);
+  const ev = lib.evaluateVaultMessage(m, RULES);
+  assert.equal(ev.verdict, "REFUSED_THEFT_SHAPED");
+  assert.equal(ev.reasons[0].rule, "no-authority-handoff");
+  assert.match(ev.reasons[0].detail, /authorizeNonceAccount/);
+});
+
+test("APPROVE: system.advanceNonceAccount is benign; initializeNonceAccount with the vault as authority hands nothing over", () => {
+  const nonce = Keypair.generate().publicKey.toBase58();
+  const advance = { programIdIndex: 2, accountIndexes: [1, 3, 0], data: u32(4) };
+  const init = { programIdIndex: 2, accountIndexes: [1, 3, 4], data: Buffer.concat([u32(6), Buffer.from(require("bs58").decode(VAULT))]) };
+  const SYSVAR_RB = "SysvarRecentB1ockHashes11111111111111111111";
+  const SYSVAR_RENT = "SysvarRent111111111111111111111111111111111";
+  const m = msg([VAULT, nonce, SYSTEM, SYSVAR_RB, SYSVAR_RENT], [advance, init], 1);
+  const ev = lib.evaluateVaultMessage(m, RULES);
+  assert.equal(ev.verdict, "APPROVE", JSON.stringify(ev.reasons));
+});
+
+test("REFUSED_COUNTERPARTY: system.withdrawNonceAccount to an unlisted destination", () => {
+  const nonce = Keypair.generate().publicKey.toBase58();
+  const SYSVAR_RB = "SysvarRecentB1ockHashes11111111111111111111";
+  const SYSVAR_RENT = "SysvarRent111111111111111111111111111111111";
+  const ix = { programIdIndex: 3, accountIndexes: [1, 2, 4, 5, 0], data: Buffer.concat([u32(5), u64(1000)]) };
+  const m = msg([VAULT, nonce, STRANGER, SYSTEM, SYSVAR_RB, SYSVAR_RENT], [ix], 2);
+  const ev = lib.evaluateVaultMessage(m, RULES);
+  assert.equal(ev.verdict, "REFUSED_COUNTERPARTY", JSON.stringify(ev.reasons));
+});

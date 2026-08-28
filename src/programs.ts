@@ -78,6 +78,18 @@ function explainSystem(a: DecodedAccountMeta[], d: Buffer): Explained {
       return { op: "system.transfer", detail: { from: acc(a, 0), to: acc(a, 1), lamports: u64le(d, 4).toString() }, flags: { movesLamports: true } };
     case 3: // CreateAccountWithSeed
       return { op: "system.createAccountWithSeed", detail: { from: acc(a, 0), newAccount: acc(a, 1) }, flags: { movesLamports: true } };
+    // Durable-nonce instructions. A nonce account whose authority is handed to another key lets that key
+    // execute a pre-signed transaction later (the Drift, April 2026 chain used a nonce under the attacker's key).
+    case 4: // AdvanceNonceAccount — accounts [nonce, recentBlockhashes, authority]; benign
+      return { op: "system.advanceNonceAccount", detail: { account: acc(a, 0), authority: acc(a, 2) }, flags: {} };
+    case 5: // WithdrawNonceAccount { lamports } — accounts [nonce, to, recentBlockhashes, rent, authority]
+      return { op: "system.withdrawNonceAccount", detail: { from: acc(a, 0), to: acc(a, 1), authority: acc(a, 4), lamports: u64le(d, 4).toString() }, flags: { movesLamports: true } };
+    case 6: // InitializeNonceAccount { authority } — accounts [nonce, recentBlockhashes, rent]
+      return { op: "system.initializeNonceAccount", detail: { account: acc(a, 0), newAuthority: d.length >= 36 ? require("bs58").encode(d.subarray(4, 36)) : null }, flags: { changesAuthority: true } };
+    case 7: // AuthorizeNonceAccount { newAuthority } — accounts [nonce, authority]
+      return { op: "system.authorizeNonceAccount", detail: { account: acc(a, 0), authority: acc(a, 1), newAuthority: d.length >= 36 ? require("bs58").encode(d.subarray(4, 36)) : null }, flags: { changesAuthority: true } };
+    case 12: // UpgradeNonceAccount — accounts [nonce]; benign
+      return { op: "system.upgradeNonceAccount", detail: { account: acc(a, 0) }, flags: {} };
     case 8: // Allocate
       return { op: "system.allocate", detail: { account: acc(a, 0), space: u64le(d, 4).toString() }, flags: {} };
     case 11: // TransferWithSeed

@@ -87,3 +87,7 @@ into `allowConfigTransactions: true`.
   `REFUSED_CONFIG_CHANGE` under default rules and `REFUSED_THEFT_SHAPED`
   (`config.membership`) when opted in, with the multisig fetch in the path.
 - `docs/threat-model.md` gains two rows.
+
+## 2026-08-28 — fourth pass: durable-nonce instructions
+
+Reading [custos-nox](https://github.com/cryptoyasenka/custos-nox)'s `privileged-nonce` / `stale-nonce-execution` rows against `src/programs.ts`: System tags 4–7 and 12 (nonce advance / withdraw / initialize / authorize / upgrade) were not decoded. They surfaced as `system.4`…`system.7` and hit the `interpretable` fallback — refused by default, which is safe, but under `trustSimulationForAllowedPrograms: true` they passed with no static read, and simulation diffs are balance-only, so an `AuthorizeNonceAccount` handing a vault-signed nonce to another key would not have been caught. Now decoded with the correct flags: authorize/initialize set `changesAuthority` (refused by `no-authority-handoff` unless the new authority is the vault), withdraw sets `movesLamports` (destination + cap rules), advance/upgrade are benign. Three tests added. Default rules unchanged; the default verdict for these shapes tightens from `REFUSED_UNSCREENABLE` to `REFUSED_THEFT_SHAPED`, and a legitimate vault nonce advance now approves instead of being unscreenable.
