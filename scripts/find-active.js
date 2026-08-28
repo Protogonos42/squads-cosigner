@@ -9,7 +9,7 @@
 //
 // usage: node scripts/find-active.js [--limit N] [--rpc URL]
 const { Connection, PublicKey } = require("@solana/web3.js");
-const sq = require("@squads-protocol/multisig");
+const sq = require("@sqds/multisig");
 const bs58 = require("bs58");
 const lib = require("../dist");
 

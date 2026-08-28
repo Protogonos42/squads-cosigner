@@ -9,7 +9,7 @@
 const fs = require("fs");
 const path = require("path");
 const { Connection, PublicKey } = require("@solana/web3.js");
-const sq = require("@squads-protocol/multisig");
+const sq = require("@sqds/multisig");
 
 const RPC = process.env.RPC_URL || "https://api.mainnet-beta.solana.com";
 const PROGRAM = sq.PROGRAM_ID;

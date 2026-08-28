@@ -3,7 +3,7 @@
 const test = require("node:test");
 const assert = require("node:assert/strict");
 const { Keypair, PublicKey } = require("@solana/web3.js");
-const sq = require("@squads-protocol/multisig");
+const sq = require("@sqds/multisig");
 const lib = require("../dist/index.js");
 
 const MS = new PublicKey("5yYzcwpKjZRn15GR5Evd93JpoAs6BrrNzMKUdeUstppa");

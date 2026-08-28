@@ -10,7 +10,7 @@
 // exported so the exact transaction the tool would sign can be inspected and
 // unit-tested offline, before any key ever touches it.
 import * as fs from "fs";
-import * as sq from "@squads-protocol/multisig";
+import * as sq from "@sqds/multisig";
 import { Connection, Keypair, PublicKey, TransactionMessage, VersionedTransaction } from "@solana/web3.js";
 import type { Rules } from "./rules";
 import { checkWithSimulation, fetchRawVaultTransaction } from "./simulate";

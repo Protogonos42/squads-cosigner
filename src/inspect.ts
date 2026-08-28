@@ -4,7 +4,7 @@
  * that touches RPC for reads.
  */
 import { Connection, PublicKey } from "@solana/web3.js";
-import * as sq from "@squads-protocol/multisig";
+import * as sq from "@sqds/multisig";
 import { accountKind, decodeAccount, decodeMultisig, decodeProposal, decodeVaultTransaction, decodeConfigTransaction, decodeVaultTransactionCreateIx, pdas, DecodedMultisig, DecodedProposal } from "./decode";
 
 export interface InspectOptions {

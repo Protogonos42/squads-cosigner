@@ -5,7 +5,7 @@
 // appended to a hash-chained JSONL audit log that `verifyAuditLog` re-checks.
 import * as crypto from "crypto";
 import * as fs from "fs";
-import * as sq from "@squads-protocol/multisig";
+import * as sq from "@sqds/multisig";
 import bs58 from "bs58";
 import { Connection, Keypair, PublicKey } from "@solana/web3.js";
 import { decodeProposal } from "./decode";

@@ -19,7 +19,7 @@ const fs = require("fs");
 const os = require("os");
 const path = require("path");
 const { Connection, Keypair, PublicKey, SystemProgram, TransactionMessage, VersionedTransaction, LAMPORTS_PER_SOL } = require("@solana/web3.js");
-const sq = require("@squads-protocol/multisig");
+const sq = require("@sqds/multisig");
 const lib = require("../dist/index.js");
 
 const RPC = process.env.RPC_URL || "https://api.devnet.solana.com";

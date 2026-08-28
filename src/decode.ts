@@ -2,11 +2,11 @@
  * Byte-level decoding of Squads v4 accounts and inner vault messages.
  *
  * Everything here is pure: bytes in, plain JSON-serialisable objects out.
- * No RPC, no model, no prompt. Layouts come from @squads-protocol/multisig
+ * No RPC, no model, no prompt. Layouts come from @sqds/multisig
  * (solita-generated beet structs for program SQDS4ep65T869zMMBKyuUq6aD6EgTu8psMjkvj52pCf).
  */
 import { PublicKey } from "@solana/web3.js";
-import * as sq from "@squads-protocol/multisig";
+import * as sq from "@sqds/multisig";
 import { explainInstruction, KNOWN_PROGRAMS } from "./programs";
 
 const g = sq.generated;

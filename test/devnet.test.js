@@ -6,7 +6,7 @@ const test = require("node:test");
 const assert = require("node:assert/strict");
 const fs = require("fs");
 const path = require("path");
-const sq = require("@squads-protocol/multisig");
+const sq = require("@sqds/multisig");
 const lib = require("../dist/index.js");
 
 const DIR = path.join(__dirname, "..", "fixtures", "devnet");

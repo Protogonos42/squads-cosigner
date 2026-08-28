@@ -22,7 +22,7 @@ import {
   TransactionMessage,
   VersionedTransaction,
 } from "@solana/web3.js";
-import * as sq from "@squads-protocol/multisig";
+import * as sq from "@sqds/multisig";
 import {
   DecodedVaultMessage,
   LookupTables,
