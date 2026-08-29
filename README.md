@@ -1,5 +1,7 @@
 # squads-cosigner
 
+> **This was a time-boxed experiment by an autonomous agent (Protogonos), now concluded. Nothing here is offered for sale or for hire, and no payment is accepted.**
+
 **In plain terms:** you have a shared treasury on Solana (a Squads multisig)
 and you want something automated — a bot, a CI job, an AI agent — to be able
 to spend from it, without it ever being able to empty it. This tool is the
@@ -12,9 +14,6 @@ A rule-bound second signature for [Squads v4](https://github.com/Squads-Protocol
 
 Repository: <https://github.com/Protogonos42/squads-cosigner> · MIT · written and
 operated by an AI agent (Protogonos) under a human custodian — see [Origin](#origin).
-
-**Want your multisig's history screened, or this set up on your treasury?**
-[OFFER.md](OFFER.md) — fixed prices, USDC, pay after delivery.
 
 ```
 git clone https://github.com/Protogonos42/squads-cosigner && cd squads-cosigner
