@@ -2463,7 +2463,7 @@
                 "fromLookupTable": false
               },
               {
-                "pubkey": "<lookup#5>",
+                "pubkey": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
                 "isSigner": false,
                 "isWritable": false,
                 "fromLookupTable": true
@@ -2518,8 +2518,8 @@
           },
           {
             "index": 2,
-            "programId": "<lookup#5>",
-            "programName": null,
+            "programId": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+            "programName": "spl-token",
             "accounts": [
               {
                 "pubkey": "8DXoZDuUoTfs7n63r93iR1WePgbWGDPv5NJ9p1XrGHdh",
@@ -2531,8 +2531,10 @@
             "dataHex": "11",
             "dataLength": 1,
             "explain": {
-              "op": "unknown",
-              "detail": {},
+              "op": "spl-token.syncNative",
+              "detail": {
+                "account": "8DXoZDuUoTfs7n63r93iR1WePgbWGDPv5NJ9p1XrGHdh"
+              },
               "flags": {}
             }
           },
@@ -2572,7 +2574,7 @@
                 "fromLookupTable": false
               },
               {
-                "pubkey": "<lookup#5>",
+                "pubkey": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
                 "isSigner": false,
                 "isWritable": false,
                 "fromLookupTable": true
@@ -2595,11 +2597,11 @@
           },
           {
             "index": 4,
-            "programId": "<lookup#6>",
+            "programId": "JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4",
             "programName": null,
             "accounts": [
               {
-                "pubkey": "<lookup#5>",
+                "pubkey": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
                 "isSigner": false,
                 "isWritable": false,
                 "fromLookupTable": true
@@ -2623,7 +2625,7 @@
                 "fromLookupTable": false
               },
               {
-                "pubkey": "<lookup#6>",
+                "pubkey": "JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4",
                 "isSigner": false,
                 "isWritable": false,
                 "fromLookupTable": true
@@ -2635,7 +2637,7 @@
                 "fromLookupTable": false
               },
               {
-                "pubkey": "<lookup#6>",
+                "pubkey": "JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4",
                 "isSigner": false,
                 "isWritable": false,
                 "fromLookupTable": true
@@ -2647,13 +2649,13 @@
                 "fromLookupTable": false
               },
               {
-                "pubkey": "<lookup#6>",
+                "pubkey": "JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4",
                 "isSigner": false,
                 "isWritable": false,
                 "fromLookupTable": true
               },
               {
-                "pubkey": "<lookup#7>",
+                "pubkey": "CAMMCzo5YL8w4VFF8KVHrK22GGUsp5VTaW7grrKgrWqK",
                 "isSigner": false,
                 "isWritable": false,
                 "fromLookupTable": true
@@ -2665,13 +2667,13 @@
                 "fromLookupTable": false
               },
               {
-                "pubkey": "<lookup#8>",
+                "pubkey": "EdPxg8QaeFSrTYqdWJn6Kezwy9McWncTYueD9eMGCuzR",
                 "isSigner": false,
                 "isWritable": false,
                 "fromLookupTable": true
               },
               {
-                "pubkey": "<lookup#0>",
+                "pubkey": "CYbD9RaToYMtWKA7QZyoLahnHdWq553Vm62Lh6qWtuxq",
                 "isSigner": false,
                 "isWritable": true,
                 "fromLookupTable": true
@@ -2689,25 +2691,25 @@
                 "fromLookupTable": false
               },
               {
-                "pubkey": "<lookup#1>",
+                "pubkey": "GviiXg2Xc1xCpyNY36r7h1EAy7uvse5UMkiiyHjRDU6Z",
                 "isSigner": false,
                 "isWritable": true,
                 "fromLookupTable": true
               },
               {
-                "pubkey": "<lookup#2>",
+                "pubkey": "3bWPj5eepJm8CxUzk5MMFMN2CFJkntxKvbmy4zwwtpJd",
                 "isSigner": false,
                 "isWritable": true,
                 "fromLookupTable": true
               },
               {
-                "pubkey": "<lookup#3>",
+                "pubkey": "AA5RaVvyGyZgtmAsJJHT5ZVBxVPtAXuYaMwfgeFJW4Mk",
                 "isSigner": false,
                 "isWritable": true,
                 "fromLookupTable": true
               },
               {
-                "pubkey": "<lookup#5>",
+                "pubkey": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
                 "isSigner": false,
                 "isWritable": false,
                 "fromLookupTable": true
@@ -2719,7 +2721,7 @@
                 "fromLookupTable": false
               },
               {
-                "pubkey": "<lookup#4>",
+                "pubkey": "72jQFwjd14BEhyDfdQsH7D2hS5dN1H6bzsikjkyHyx2D",
                 "isSigner": false,
                 "isWritable": true,
                 "fromLookupTable": true
@@ -2737,7 +2739,7 @@
                 "fromLookupTable": false
               },
               {
-                "pubkey": "<lookup#6>",
+                "pubkey": "JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4",
                 "isSigner": false,
                 "isWritable": false,
                 "fromLookupTable": true
@@ -2753,8 +2755,8 @@
           },
           {
             "index": 5,
-            "programId": "<lookup#5>",
-            "programName": null,
+            "programId": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+            "programName": "spl-token",
             "accounts": [
               {
                 "pubkey": "8DXoZDuUoTfs7n63r93iR1WePgbWGDPv5NJ9p1XrGHdh",
@@ -2778,13 +2780,20 @@
             "dataHex": "09",
             "dataLength": 1,
             "explain": {
-              "op": "unknown",
-              "detail": {},
-              "flags": {}
+              "op": "spl-token.closeAccount",
+              "detail": {
+                "account": "8DXoZDuUoTfs7n63r93iR1WePgbWGDPv5NJ9p1XrGHdh",
+                "destination": "5m53MMnwNTVUQQqbqEnuUJzb8iyti6Y3eX7nMq5ZmFuv",
+                "owner": "5m53MMnwNTVUQQqbqEnuUJzb8iyti6Y3eX7nMq5ZmFuv"
+              },
+              "flags": {
+                "closesAccount": true,
+                "movesLamports": true
+              }
             }
           }
         ],
-        "unresolvedLookupKeys": 9
+        "unresolvedLookupKeys": 0
       },
       "innerMessageBytes": {
         "0": 1,
@@ -3305,7 +3314,14 @@
         "515": 18,
         "516": 9,
         "517": 23
-      }
+      },
+      "lookupTables": [
+        {
+          "table": "BDqppwFYeMpUicN9xbfoM7FgRnHVW1uTUtrGA7uG2vQg",
+          "resolved": true,
+          "frozen": false
+        }
+      ]
     },
     "kind": "vaultCreate",
     "evaluation": {
@@ -3313,39 +3329,9 @@
       "reasons": [
         {
           "verdict": "REFUSED_UNSCREENABLE",
-          "rule": "strictLookupTables",
-          "instruction": null,
-          "detail": "9 account(s) come from address lookup tables and are not resolved"
-        },
-        {
-          "verdict": "REFUSED_UNSCREENABLE",
-          "rule": "strictLookupTables",
-          "instruction": 0,
-          "detail": "instruction references unresolved lookup-table accounts; cannot identify its counterparties"
-        },
-        {
-          "verdict": "REFUSED_UNSCREENABLE",
-          "rule": "strictLookupTables",
-          "instruction": 2,
-          "detail": "instruction references unresolved lookup-table accounts; cannot identify its counterparties"
-        },
-        {
-          "verdict": "REFUSED_UNSCREENABLE",
-          "rule": "strictLookupTables",
-          "instruction": 3,
-          "detail": "instruction references unresolved lookup-table accounts; cannot identify its counterparties"
-        },
-        {
-          "verdict": "REFUSED_UNSCREENABLE",
-          "rule": "strictLookupTables",
+          "rule": "interpretable",
           "instruction": 4,
-          "detail": "instruction references unresolved lookup-table accounts; cannot identify its counterparties"
-        },
-        {
-          "verdict": "REFUSED_UNSCREENABLE",
-          "rule": "strictLookupTables",
-          "instruction": 5,
-          "detail": "instruction references unresolved lookup-table accounts; cannot identify its counterparties"
+          "detail": "instruction to JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4 could not be interpreted (unknown)"
         }
       ],
       "lamportsOut": "1592000000",

@@ -38,7 +38,10 @@ squads-cosigner watch   --rules r.json --key k.json [--log audit.jsonl]
                                                           # daemon: approve/execute/skip, hash-chained log ← shipped (devnet)
 squads-cosigner verify-log audit.jsonl                    # re-hash the chain
 node scripts/screen.js <multisig> [--from N --to N]       # treasury screen: full history decoded (even closed
-                                                          # proposals), observed rules.json, markdown report ← shipped
+        [--names names/<program>.json] [--no-luts]        # proposals), lookup tables resolved + mutable ones flagged,
+                                                          # observed rules.json, markdown report ← shipped
+                                                          # --names: name a custom program's instructions by Anchor
+                                                          # discriminator (see names/spiko-minter.json for the shape)
 ```
 
 Verdicts are a closed set: `APPROVE`, `REFUSED_COUNTERPARTY`,

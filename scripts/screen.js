@@ -117,6 +117,48 @@ function inferStatus(h) {
   return { status: "Gone", source: "account reclaimed, no execute seen" };
 }
 
+// Resolve every address lookup table the inner message references, cached
+// per table address so a treasury that reuses one table costs one RPC call.
+// Tables that no longer exist are left unresolved (the rules then refuse).
+const lutCache = new Map();
+async function resolveTables(conn, innerBytes, delay) {
+  const raw = lib.parseCompactVaultMessage(innerBytes);
+  if (!raw.addressTableLookups?.length) return null;
+  const tables = new Map();
+  for (const l of raw.addressTableLookups) {
+    const k = l.accountKey.toBase58();
+    if (!lutCache.has(k)) {
+      await sleep(delay);
+      const { value } = await withRetry(() => conn.getAddressLookupTable(l.accountKey));
+      lutCache.set(k, value ? { addresses: value.state.addresses.map((x) => x.toBase58()), frozen: value.state.authority == null } : null);
+    }
+    const t = lutCache.get(k);
+    if (t) tables.set(k, t.addresses);
+  }
+  return tables;
+}
+
+// Optional program-name file (--names FILE): { "<programId>": { "name": "...",
+// "instructions": { "<8-byte discriminator hex>": "approveMint", ... } } }.
+// Names an instruction the built-in decoder does not know, by discriminator
+// only — arguments are NOT decoded and no flags are set. This makes the report
+// readable for a treasury whose proposals are all calls into its own program;
+// it does not make those calls safe, and the report says so.
+function applyNames(msg, names, obs) {
+  if (!names) return;
+  for (const ix of msg.instructions) {
+    const p = names[ix.programId];
+    if (!p || ix.explain?.op !== "unknown") continue;
+    const disc = (ix.dataHex || "").slice(0, 16);
+    const ixName = p.instructions?.[disc];
+    ix.programName = p.name;
+    if (ixName) {
+      ix.explain = { op: `${p.name}.${ixName}`, detail: { namedBy: "discriminator", argsDecoded: false }, flags: {} };
+      obs.namedByFile++;
+    }
+  }
+}
+
 function collectObserved(msg, vault, obs) {
   for (const ix of msg.instructions) {
     const unresolved = ix.programId.startsWith("<"); // placeholder for an unresolved lookup-table key
@@ -134,7 +176,7 @@ function collectObserved(msg, vault, obs) {
   const a = parseArgs(process.argv.slice(2));
   const msArg = a._[0];
   if (!msArg) {
-    console.error("usage: screen.js <multisig> [--from N] [--to N] [--out DIR] [--rpc URL] [--delay MS]");
+    console.error("usage: screen.js <multisig> [--from N] [--to N] [--out DIR] [--rpc URL] [--delay MS] [--names FILE] [--no-luts]");
     process.exit(2);
   }
   const rpc = a.rpc || RPC;
@@ -152,7 +194,8 @@ function collectObserved(msg, vault, obs) {
   fs.mkdirSync(outDir, { recursive: true });
   console.error(`multisig ${multisigPda.toBase58()} vault ${vault} threshold ${ms.threshold}/${ms.members.length} indices ${from}..${to}`);
 
-  const obs = { programs: new Set(), destinations: new Set(), unknownPrograms: new Set(), malformed: 0, withLookupTables: 0 };
+  const names = a.names ? JSON.parse(fs.readFileSync(a.names, "utf8")) : null;
+  const obs = { programs: new Set(), destinations: new Set(), unknownPrograms: new Set(), malformed: 0, withLookupTables: 0, namedByFile: 0, mutableTables: new Set() };
   const rows = [];
   for (let i = from; i <= to; i++) {
     const h = await historyForIndex(conn, multisigPda, i, delay);
@@ -162,6 +205,13 @@ function collectObserved(msg, vault, obs) {
     if (h.create?.kind === "vaultCreate") {
       try {
         decoded = lib.decodeVaultTransactionCreateIx(h.create.data);
+        if (decoded.message.addressTableLookups?.length && !a["no-luts"]) {
+          const tables = await resolveTables(conn, decoded.innerMessageBytes, delay);
+          if (tables?.size) decoded = lib.decodeVaultTransactionCreateIx(h.create.data, tables);
+          decoded.lookupTables = decoded.message.addressTableLookups.map((l) => ({ table: l.table, resolved: tables?.has(l.table) ?? false, frozen: lutCache.get(l.table)?.frozen ?? null }));
+          for (const t of decoded.lookupTables) if (t.resolved && t.frozen === false) obs.mutableTables.add(t.table);
+        }
+        applyNames(decoded.message, names, obs);
         collectObserved(decoded.message, vault, obs);
       } catch (e) {
         decoded = { error: String(e) };
@@ -213,7 +263,8 @@ function collectObserved(msg, vault, obs) {
   const configTxs = rows.filter((r) => r.kind === "configCreate");
   const seenOnce = [...obs.destinations].filter((d) => rows.filter((r) => JSON.stringify(r.decoded || "").includes(d)).length === 1);
   if (obs.unknownPrograms.size) anomalies.push(`${obs.unknownPrograms.size} program(s) the decoder cannot read were called: ${[...obs.unknownPrograms].map(short).join(", ")}. A rule-bound co-signer would refuse these as UNSCREENABLE until a decoder exists for them.`);
-  if (obs.withLookupTables) anomalies.push(`${obs.withLookupTables} proposal(s) reference address lookup tables. If a table is mutable, its owner can change what the proposal does after members approve it.`);
+  if (obs.withLookupTables) anomalies.push(`${obs.withLookupTables} proposal(s) reference address lookup tables${a["no-luts"] ? " (not resolved: --no-luts)" : `; ${lutCache.size} distinct table(s) fetched, ${[...lutCache.values()].filter((t) => t).length} still exist`}. ${obs.mutableTables.size ? `**${obs.mutableTables.size} of them are MUTABLE** (${[...obs.mutableTables].map(short).join(", ")}): the table's authority can change what an approved proposal does before it executes.` : "Every table that still exists is frozen (no authority), so its contents cannot change after approval."}`);
+  if (obs.namedByFile) anomalies.push(`${obs.namedByFile} instruction(s) were named from \`--names ${path.basename(a.names)}\` by discriminator only: the report can say *which* instruction of that program was called, but arguments were not decoded and the rule engine treats the call as interpretable solely because the program is allow-listed. Do not read a named row as a safe row.`);
   if (configTxs.length) anomalies.push(`${configTxs.length} config transaction(s) — membership/threshold/time-lock changes: ${configTxs.map((r) => `#${r.index} [${(r.decoded?.configActions || []).join(", ")}] ${r.status.status}`).join("; ")}.`);
   if (stillActive.length) anomalies.push(`${stillActive.length} proposal(s) still open: ${stillActive.map((r) => `#${r.index} ${r.live.status.kind}`).join(", ")}. Each holds ~0.0077 SOL of rent until closed.`);
   if (seenOnce.length) anomalies.push(`${seenOnce.length} destination(s) appeared in exactly one proposal: ${seenOnce.map(short).join(", ")}.`);

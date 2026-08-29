@@ -1,6 +1,6 @@
 # Treasury screen — 5yYzcwpKjZRn15GR5Evd93JpoAs6BrrNzMKUdeUstppa
 
-Generated 2026-08-28T22:40:47.061Z by [squads-cosigner](https://github.com/Protogonos42/squads-cosigner) `scripts/screen.js`, read-only, from public chain state via `https://api.mainnet-beta.solana.com`. Written by an AI agent (Protogonos); verify anything you act on.
+Generated 2026-08-29T01:06:42.023Z by [squads-cosigner](https://github.com/Protogonos42/squads-cosigner) `scripts/screen.js`, read-only, from public chain state via `https://api.mainnet-beta.solana.com`. Written by an AI agent (Protogonos); verify anything you act on.
 
 ## Configuration
 
@@ -27,26 +27,26 @@ Generated 2026-08-28T22:40:47.061Z by [squads-cosigner](https://github.com/Proto
 
 | # | Created | Type | Status | Instructions | Verdict under observed rules | Lamports out | Note |
 |---|---|---|---|---|---|---|---|
-| 1 | 2026-08-27 | vault | Executed | system.system.transfer | `APPROVE` | 5000000 |  |
-| 2 | 2026-08-27 | vault | Executed | spl-associated-token-account.spl-associated-token-account.createIdempotent<br>spl-stake-pool.spl-stake-pool.depositSol | `APPROVE` | 400000000 |  |
-| 3 | 2026-08-27 | vault | Closed (unexecuted) | system.system.transfer | `APPROVE` | 10000000 |  |
-| 4 | 2026-08-28 | vault | Executed | spl-associated-token-account.spl-associated-token-account.createIdempotent<br>spl-stake-pool.spl-stake-pool.depositSol | `APPROVE` | 1200000000 |  |
-| 5 | 2026-08-28 | vault | Executed | spl-stake-pool.spl-stake-pool.withdrawSol | `APPROVE` | 0 |  |
-| 6 | 2026-08-28 | vault | Closed (unexecuted) | spl-associated-token-account.spl-associated-token-account.createIdempotent<br>system.system.transfer<br><loo…p#5>.unknown<br>spl-associated-token-account.spl-associated-token-account.createIdempotent<br><loo…p#6>.unknown<br><loo…p#5>.unknown | `REFUSED_UNSCREENABLE` | 1592000000 | 9 account(s) come from address lookup tables and are not resolved; instruction references unresolved lookup-table accounts; cannot identify its counterparties;  |
-| 7 | 2026-08-28 | vault | Executed | spl-associated-token-account.spl-associated-token-account.createIdempotent<br>system.system.transfer<br>spl-token.spl-token.syncNative<br>spl-associated-token-account.spl-associated-token-account.createIdempotent<br>JUP6…TaV4.unknown<br>spl-token.spl-token.closeAccount | `REFUSED_UNSCREENABLE` | 1592000000 | instruction to JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4 could not be interpreted (unknown) |
+| 1 | 2026-08-27 | vault | Executed | system.transfer | `APPROVE` | 5000000 |  |
+| 2 | 2026-08-27 | vault | Executed | spl-associated-token-account.createIdempotent<br>spl-stake-pool.depositSol | `APPROVE` | 400000000 |  |
+| 3 | 2026-08-27 | vault | Closed (unexecuted) | system.transfer | `APPROVE` | 10000000 |  |
+| 4 | 2026-08-28 | vault | Executed | spl-associated-token-account.createIdempotent<br>spl-stake-pool.depositSol | `APPROVE` | 1200000000 |  |
+| 5 | 2026-08-28 | vault | Executed | spl-stake-pool.withdrawSol | `APPROVE` | 0 |  |
+| 6 | 2026-08-28 | vault | Closed (unexecuted) | spl-associated-token-account.createIdempotent<br>system.transfer<br>spl-token.syncNative<br>spl-associated-token-account.createIdempotent<br>JUP6…TaV4.unknown<br>spl-token.closeAccount | `REFUSED_UNSCREENABLE` | 1592000000 | instruction to JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4 could not be interpreted (unknown) |
+| 7 | 2026-08-28 | vault | Executed | spl-associated-token-account.createIdempotent<br>system.transfer<br>spl-token.syncNative<br>spl-associated-token-account.createIdempotent<br>JUP6…TaV4.unknown<br>spl-token.closeAccount | `REFUSED_UNSCREENABLE` | 1592000000 | instruction to JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4 could not be interpreted (unknown) |
 
 Verdict counts: `APPROVE` 5, `REFUSED_UNSCREENABLE` 2.
 
 ## Things to look at
 
-- 3 program(s) the decoder cannot read were called: <loo…p#5>, <loo…p#6>, JUP6…TaV4. A rule-bound co-signer would refuse these as UNSCREENABLE until a decoder exists for them.
-- 1 proposal(s) reference address lookup tables. If a table is mutable, its owner can change what the proposal does after members approve it.
+- 1 program(s) the decoder cannot read were called: JUP6…TaV4. A rule-bound co-signer would refuse these as UNSCREENABLE until a decoder exists for them.
+- 1 proposal(s) reference address lookup tables; 1 distinct table(s) fetched, 1 still exist. **1 of them are MUTABLE** (BDqp…2vQg): the table's authority can change what an approved proposal does before it executes.
 - 2 destination(s) appeared in exactly one proposal: 49i3…rR26, FMAo…88v5.
 - 1 executed proposal(s) the observed rules would still refuse (see table) — these are the shapes you must decide about before a co-signer goes live.
 
 ## Observed rules
 
-`rules.observed.json` beside this file allows exactly the programs and destinations this treasury has used (7 programs, 7 destinations), refuses config changes and mutable lookup tables, and sets no caps. Against the 7 proposals screened it approves 5 and refuses 2; every refusal is in the table with its reason. **It is a starting point, not a policy**: tighten destinations to the ones you still pay, add `maxLamportsOut`/`maxTokenOut` caps, and decide about each refused-but-executed row.
+`rules.observed.json` beside this file allows exactly the programs and destinations this treasury has used (5 programs, 7 destinations), refuses config changes and mutable lookup tables, and sets no caps. Against the 7 proposals screened it approves 5 and refuses 2; every refusal is in the table with its reason. **It is a starting point, not a policy**: tighten destinations to the ones you still pay, add `maxLamportsOut`/`maxTokenOut` caps, and decide about each refused-but-executed row.
 
 ## Method
 

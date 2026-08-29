@@ -1,0 +1,20 @@
+{
+  "$comment": "Instruction names for Spiko's Minter program, taken from the Codama client in github.com/spiko-tech/solana-contracts (clients/ts/minter/src/generated/programs/minter.ts, main @ 2026-08-28). Discriminators are the first 8 bytes of instruction data (Anchor sha256('global:<name>')[..8]). Naming by discriminator does not decode arguments.",
+  "8CVKFptWa13Z43e82tYufueoWH7tqJfsNQXB33g1WeVw": {
+    "name": "spiko-minter",
+    "instructions": {
+      "702a2d5a74b50daa": "acceptAdmin",
+      "8b9a396477c4b62d": "acceptMintAuthority",
+      "8f227d3f071b8aa4": "approveMint",
+      "18b1a883485eeca5": "cancelAdminNomination",
+      "3d57821640398939": "cancelMint",
+      "09e822818d34993e": "cancelMintAuthorityNomination",
+      "afaf6d1f0d989bed": "initialize",
+      "c606886be8e8b39e": "initiateMint",
+      "860b1ff4144d8a79": "nominateAdmin",
+      "24c04fd71b1d1e18": "nominateMintAuthority",
+      "00e56444fe03b94b": "setDailyLimit",
+      "179b8eb5366d256a": "setMintInitiator"
+    }
+  }
+}
