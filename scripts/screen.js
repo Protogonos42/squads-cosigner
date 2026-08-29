@@ -394,7 +394,42 @@ function collectObserved(msg, vault, obs) {
   if (configTxs.length) anomalies.push(`${configTxs.length} config transaction(s) — membership/threshold/time-lock changes: ${configTxs.map((r) => `#${r.index} [${(r.decoded?.configDetails || r.decoded?.configActions || []).join(", ")}] ${r.status.status}`).join("; ")}.`);
   const nonMemberLimits = (spendingLimits || []).filter((s) => !s.members.every((m) => ms.members.some((x) => x.key === m)));
   if (nonMemberLimits.length) anomalies.push(`${nonMemberLimits.length} live spending limit(s) whose spender is not a multisig member: ${nonMemberLimits.map((s) => `${fmtAmount(s.mint, s.amount)}/${s.period} by ${s.members.map(shortKey).join(",")}`).join("; ")}. Remove with a RemoveSpendingLimit proposal if unintended.`);
-  if (stillActive.length) anomalies.push(`${stillActive.length} proposal(s) still open: ${stillActive.map((r) => `#${r.index} ${r.live.status.kind}`).join(", ")}. Each holds ~0.0077 SOL of rent until closed.`);
+  if (stillActive.length) {
+    // For each open proposal: how close it is to executing, how many rejections would kill it,
+    // and whether the loader accounts it touches (buffers to close / upgrade from) still exist.
+    const votingMembers = ms.members.filter((m) => m.permissions.vote).length;
+    const toKill = votingMembers - ms.threshold + 1; // Squads v4: rejected when rejections > members - threshold
+    const parts = [];
+    for (const r of stillActive) {
+      const approved = r.live.approved?.length ?? 0;
+      const rejected = r.live.rejected?.length ?? 0;
+      let line = `#${r.index} ${r.live.status.kind} (${approved}/${ms.threshold} approvals, ${rejected}/${toKill} rejections needed to kill)`;
+      const loaderIxs = (r.decoded?.message?.instructions || []).filter((ix) => ix.explain?.op?.startsWith("bpf-upgradeable-loader."));
+      const targets = new Map();
+      for (const ix of loaderIxs) {
+        const d = ix.explain.detail || {};
+        const t = ix.explain.op.endsWith(".upgrade") ? d.buffer : d.account || d.programData;
+        if (t) targets.set(t, ix.explain.op.split(".")[1]);
+      }
+      if (targets.size) {
+        const states = [];
+        let lamports = 0n, gone = 0;
+        for (const [t] of targets) {
+          try {
+            const info = await withRetry(() => conn.getAccountInfo(new PublicKey(t)));
+            await sleep(delay);
+            if (!info) { gone++; states.push(`${short(t)} GONE`); }
+            else { lamports += BigInt(info.lamports); states.push(`${short(t)} ${(info.lamports / 1e9).toFixed(3)} SOL`); }
+          } catch (e) { states.push(`${short(t)} ?`); }
+        }
+        line += ` — loader targets: ${states.join(", ")}`;
+        if (gone === targets.size) line += ` → every target is gone; this proposal can no longer execute and should be cancelled`;
+        else if (lamports > 0n && [...targets.values()].every((op) => op === "close")) line += ` → closing returns ${(Number(lamports) / 1e9).toFixed(3)} SOL of rent to the recipient`;
+      }
+      parts.push(line);
+    }
+    anomalies.push(`${stillActive.length} proposal(s) still open: ${parts.join("; ")}. Each holds ~0.0077 SOL of proposal rent until closed.`);
+  }
   if (seenOnce.length) anomalies.push(`${seenOnce.length} destination(s) appeared in exactly one proposal: ${seenOnce.map(short).join(", ")}.`);
   if (executedRefused.length) anomalies.push(`${executedRefused.length} executed proposal(s) the observed rules would still refuse (see table) — these are the shapes you must decide about before a co-signer goes live.`);
 

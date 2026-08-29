@@ -209,7 +209,17 @@ function explainLoader(a: DecodedAccountMeta[], d: Buffer): Explained {
   const tag = u32le(d, 0);
   const names: Record<number, string> = { 0: "initializeBuffer", 1: "write", 2: "deployWithMaxDataLen", 3: "upgrade", 4: "setAuthority", 5: "close", 6: "extendProgram", 7: "setAuthorityChecked" };
   const op = names[tag] ?? String(tag);
-  return { op: `bpf-upgradeable-loader.${op}`, detail: { programData: acc(a, 0) }, flags: { upgradesProgram: tag === 3 || tag === 2, changesAuthority: tag === 4 || tag === 7, closesAccount: tag === 5 } };
+  // Account layouts (solana_program::bpf_loader_upgradeable):
+  //   upgrade(3):        [programData, program, buffer, spill, rent, clock, authority]
+  //   setAuthority(4/7): [account(buffer|programData), currentAuthority, newAuthority]
+  //   close(5):          [account(buffer|programData), recipient, authority, (program)]
+  //   extendProgram(6):  [programData, program, (system, payer)]
+  const detail: Record<string, string | undefined> = { programData: acc(a, 0) };
+  if (tag === 3) Object.assign(detail, { program: acc(a, 1), buffer: acc(a, 2), spill: acc(a, 3) });
+  else if (tag === 4 || tag === 7) Object.assign(detail, { account: acc(a, 0), currentAuthority: acc(a, 1), newAuthority: acc(a, 2) });
+  else if (tag === 5) Object.assign(detail, { account: acc(a, 0), recipient: acc(a, 1), authority: acc(a, 2), program: acc(a, 3) });
+  else if (tag === 6) Object.assign(detail, { program: acc(a, 1) });
+  return { op: `bpf-upgradeable-loader.${op}`, detail, flags: { upgradesProgram: tag === 3 || tag === 2, changesAuthority: tag === 4 || tag === 7, closesAccount: tag === 5 } };
 }
 
 function explainComputeBudget(d: Buffer): Explained {
