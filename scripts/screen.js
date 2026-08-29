@@ -15,6 +15,66 @@ const { Connection, PublicKey } = require("@solana/web3.js");
 const sq = require("@sqds/multisig");
 const lib = require("../dist/index.js");
 
+const KNOWN_MINTS = { EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v: ["USDC", 6], Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCdtjyeuz4W: ["USDT", 6], So11111111111111111111111111111111111111112: ["wSOL", 9] };
+const PERIODS = ["OneTime", "Day", "Week", "Month"];
+const shortKey = (k) => (k ? `${String(k).slice(0, 4)}…${String(k).slice(-4)}` : "?");
+function fmtAmount(mint, amount) {
+  const m = KNOWN_MINTS[mint];
+  const raw = BigInt(String(amount));
+  if (!m) return `${raw} raw of ${shortKey(mint)}`;
+  const d = 10n ** BigInt(m[1]);
+  const whole = raw / d, frac = (raw % d).toString().padStart(m[1], "0").replace(/0+$/, "");
+  return `${whole}${frac ? "." + frac : ""} ${m[0]}`;
+}
+function permString(mask) {
+  const p = [];
+  if (mask & 1) p.push("initiate");
+  if (mask & 2) p.push("vote");
+  if (mask & 4) p.push("execute");
+  return p.length ? p.join("+") : "none";
+}
+// One line per config action, with its arguments. The action name alone hides
+// the thing that matters (which key, how much, to whom), so say it.
+function describeConfigAction(x) {
+  const k = x.__kind;
+  switch (k) {
+    case "AddMember": return `AddMember ${shortKey(x.newMember?.key?.toBase58?.() ?? x.newMember?.key)} (${permString(x.newMember?.permissions?.mask ?? 0)})`;
+    case "RemoveMember": return `RemoveMember ${shortKey(x.oldMember?.toBase58?.() ?? x.oldMember)}`;
+    case "ChangeThreshold": return `ChangeThreshold → ${x.newThreshold}`;
+    case "SetTimeLock": return `SetTimeLock → ${x.newTimeLock}s`;
+    case "AddSpendingLimit": {
+      const mint = x.mint?.toBase58?.() ?? String(x.mint);
+      const members = (x.members || []).map((m) => shortKey(m.toBase58?.() ?? m)).join(",");
+      const dests = (x.destinations || []).map((m) => shortKey(m.toBase58?.() ?? m));
+      return `AddSpendingLimit vault ${x.vaultIndex}: ${fmtAmount(mint, x.amount)} per ${PERIODS[x.period] ?? x.period}, member(s) ${members || "?"} → ${dests.length ? dests.join(",") : "any destination"}`;
+    }
+    case "RemoveSpendingLimit": return `RemoveSpendingLimit ${shortKey(x.spendingLimit?.toBase58?.() ?? x.spendingLimit)}`;
+    case "SetRentCollector": return `SetRentCollector → ${x.newRentCollector ? shortKey(x.newRentCollector.toBase58?.() ?? x.newRentCollector) : "none"}`;
+    default: return k;
+  }
+}
+// Live SpendingLimit accounts for this multisig (getProgramAccounts; some public
+// RPCs refuse it — then we say so rather than claim there are none).
+async function fetchSpendingLimits(conn, multisigPda) {
+  const disc = Buffer.from(sq.generated.spendingLimitDiscriminator);
+  const accs = await conn.getProgramAccounts(sq.PROGRAM_ID, {
+    filters: [{ memcmp: { offset: 0, bytes: require("bs58").encode(disc) } }, { memcmp: { offset: 8, bytes: multisigPda.toBase58() } }],
+  });
+  return accs.map(({ pubkey, account }) => {
+    const [s] = sq.accounts.SpendingLimit.fromAccountInfo(account);
+    return {
+      address: pubkey.toBase58(),
+      vaultIndex: s.vaultIndex,
+      mint: s.mint.toBase58(),
+      amount: String(sq.utils.toBigInt(s.amount)),
+      remaining: String(sq.utils.toBigInt(s.remainingAmount)),
+      period: PERIODS[s.period] ?? String(s.period),
+      members: s.members.map((m) => m.toBase58()),
+      destinations: s.destinations.map((m) => m.toBase58()),
+    };
+  });
+}
+
 const RPC = process.env.RPC_URL || "https://api.mainnet-beta.solana.com";
 const PROGRAM = sq.PROGRAM_ID;
 const D = (k) => Buffer.from(sq.generated[k]);
@@ -193,6 +253,13 @@ function collectObserved(msg, vault, obs) {
   const outDir = a.out || path.join("screens", multisigPda.toBase58().slice(0, 8));
   fs.mkdirSync(outDir, { recursive: true });
   console.error(`multisig ${multisigPda.toBase58()} vault ${vault} threshold ${ms.threshold}/${ms.members.length} indices ${from}..${to}`);
+  let spendingLimits = null; // null = could not list; [] = listed, none
+  try {
+    spendingLimits = await withRetry(() => fetchSpendingLimits(conn, multisigPda));
+    console.error(`  spending limits live: ${spendingLimits.length}`);
+  } catch (e) {
+    console.error(`  spending limits: could not list (${String(e).slice(0, 80)})`);
+  }
 
   const names = a.names ? JSON.parse(fs.readFileSync(a.names, "utf8")) : null;
   const obs = { programs: new Set(), destinations: new Set(), unknownPrograms: new Set(), malformed: 0, withLookupTables: 0, namedByFile: 0, mutableTables: new Set() };
@@ -219,7 +286,7 @@ function collectObserved(msg, vault, obs) {
     } else if (h.create?.kind === "configCreate") {
       try {
         const [args] = sq.generated.configTransactionCreateStruct.deserialize(h.create.data);
-        decoded = { configActions: args.args.actions.map((x) => x.__kind), memo: args.args.memo };
+        decoded = { configActions: args.args.actions.map((x) => x.__kind), configDetails: args.args.actions.map(describeConfigAction), memo: args.args.memo };
       } catch (e) {
         decoded = { error: String(e) };
       }
@@ -265,7 +332,9 @@ function collectObserved(msg, vault, obs) {
   if (obs.unknownPrograms.size) anomalies.push(`${obs.unknownPrograms.size} program(s) the decoder cannot read were called: ${[...obs.unknownPrograms].map(short).join(", ")}. A rule-bound co-signer would refuse these as UNSCREENABLE until a decoder exists for them.`);
   if (obs.withLookupTables) anomalies.push(`${obs.withLookupTables} proposal(s) reference address lookup tables${a["no-luts"] ? " (not resolved: --no-luts)" : `; ${lutCache.size} distinct table(s) fetched, ${[...lutCache.values()].filter((t) => t).length} still exist`}. ${obs.mutableTables.size ? `**${obs.mutableTables.size} of them are MUTABLE** (${[...obs.mutableTables].map(short).join(", ")}): the table's authority can change what an approved proposal does before it executes.` : "Every table that still exists is frozen (no authority), so its contents cannot change after approval."}`);
   if (obs.namedByFile) anomalies.push(`${obs.namedByFile} instruction(s) were named from \`--names ${path.basename(a.names)}\` by discriminator only: the report can say *which* instruction of that program was called, but arguments were not decoded and the rule engine treats the call as interpretable solely because the program is allow-listed. Do not read a named row as a safe row.`);
-  if (configTxs.length) anomalies.push(`${configTxs.length} config transaction(s) — membership/threshold/time-lock changes: ${configTxs.map((r) => `#${r.index} [${(r.decoded?.configActions || []).join(", ")}] ${r.status.status}`).join("; ")}.`);
+  if (configTxs.length) anomalies.push(`${configTxs.length} config transaction(s) — membership/threshold/time-lock changes: ${configTxs.map((r) => `#${r.index} [${(r.decoded?.configDetails || r.decoded?.configActions || []).join(", ")}] ${r.status.status}`).join("; ")}.`);
+  const nonMemberLimits = (spendingLimits || []).filter((s) => !s.members.every((m) => ms.members.some((x) => x.key === m)));
+  if (nonMemberLimits.length) anomalies.push(`${nonMemberLimits.length} live spending limit(s) whose spender is not a multisig member: ${nonMemberLimits.map((s) => `${fmtAmount(s.mint, s.amount)}/${s.period} by ${s.members.map(shortKey).join(",")}`).join("; ")}. Remove with a RemoveSpendingLimit proposal if unintended.`);
   if (stillActive.length) anomalies.push(`${stillActive.length} proposal(s) still open: ${stillActive.map((r) => `#${r.index} ${r.live.status.kind}`).join(", ")}. Each holds ~0.0077 SOL of rent until closed.`);
   if (seenOnce.length) anomalies.push(`${seenOnce.length} destination(s) appeared in exactly one proposal: ${seenOnce.map(short).join(", ")}.`);
   if (executedRefused.length) anomalies.push(`${executedRefused.length} executed proposal(s) the observed rules would still refuse (see table) — these are the shapes you must decide about before a co-signer goes live.`);
@@ -306,6 +375,25 @@ function collectObserved(msg, vault, obs) {
   md.push(``);
   md.push(`${voters} member(s) can vote; ${votersNeeded} approval(s) execute a proposal.${voters === votersNeeded ? " **Every voter is required — losing one key freezes the treasury.**" : ""}`);
   md.push(``);
+  md.push(`### Spending limits`);
+  md.push(``);
+  if (spendingLimits === null) {
+    md.push(`Could not list SpendingLimit accounts from this RPC (getProgramAccounts refused). Config proposals below still show every AddSpendingLimit/RemoveSpendingLimit with its arguments; whether each is still live is unverified.`);
+  } else if (!spendingLimits.length) {
+    md.push(`None live. Nobody can move funds from any vault without ${votersNeeded} approval(s).`);
+  } else {
+    md.push(`A spending limit is a **threshold bypass by design**: the listed keys can move up to the amount per period to the listed destinations with no approvals at all.`);
+    md.push(``);
+    md.push(`| Vault | Amount / period | Remaining | Who can spend | Destinations | Member of multisig? |`);
+    md.push(`|---|---|---|---|---|---|`);
+    const memberSet = new Set(ms.members.map((m) => m.key));
+    for (const s of spendingLimits) {
+      const who = s.members.map((m) => `\`${shortKey(m)}\``).join(", ");
+      const isMember = s.members.every((m) => memberSet.has(m)) ? "yes" : "**no — a non-member key can spend**";
+      md.push(`| ${s.vaultIndex} | ${fmtAmount(s.mint, s.amount)} / ${s.period} | ${fmtAmount(s.mint, s.remaining)} | ${who} | ${s.destinations.length ? s.destinations.map((d) => `\`${shortKey(d)}\``).join(", ") : "any"} | ${isMember} |`);
+    }
+  }
+  md.push(``);
   md.push(`## Proposal history`);
   md.push(``);
   md.push(`| # | Created | Type | Status | Instructions | Verdict under observed rules | Lamports out | Note |`);
@@ -313,7 +401,7 @@ function collectObserved(msg, vault, obs) {
   for (const r of rows) {
     const when = r.create?.blockTime ? new Date(r.create.blockTime * 1000).toISOString().slice(0, 10) : "?";
     const type = r.kind === "vaultCreate" ? "vault" : r.kind === "configCreate" ? "config" : r.kind;
-    const ixs = r.decoded?.message ? r.decoded.message.instructions.map((ix) => (ix.explain?.op && ix.explain.op !== "unknown" ? ix.explain.op : `${ix.programName || short(ix.programId)}.unknown`)).join("<br>") : r.decoded?.configActions ? r.decoded.configActions.join("<br>") : "—";
+    const ixs = r.decoded?.message ? r.decoded.message.instructions.map((ix) => (ix.explain?.op && ix.explain.op !== "unknown" ? ix.explain.op : `${ix.programName || short(ix.programId)}.unknown`)).join("<br>") : r.decoded?.configDetails ? r.decoded.configDetails.join("<br>") : r.decoded?.configActions ? r.decoded.configActions.join("<br>") : "—";
     const note = r.evaluation.reasons.map((x) => x.detail).join("; ").slice(0, 160);
     md.push(`| ${r.index} | ${when} | ${type} | ${r.status.status} | ${ixs} | \`${r.evaluation.verdict}\` | ${r.evaluation.lamportsOut} | ${note} |`);
   }
