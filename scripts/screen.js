@@ -8,7 +8,7 @@
 // evaluates every proposal against it. Writes a markdown report and the
 // rules file. Needs only the address; never a key.
 //
-// usage: node scripts/screen.js <multisig> [--from N] [--to N] [--out DIR] [--rpc URL]
+// usage: node scripts/screen.js <multisig|vault|program> [--from N] [--to N] [--out DIR] [--rpc URL]
 const fs = require("fs");
 const path = require("path");
 const { Connection, PublicKey } = require("@solana/web3.js");
@@ -180,6 +180,64 @@ function inferStatus(h) {
 // Resolve every address lookup table the inner message references, cached
 // per table address so a treasury that reuses one table costs one RPC call.
 // Tables that no longer exist are left unresolved (the rules then refuse).
+
+// Accept a multisig, one of its vault PDAs, or an upgradeable program whose
+// authority is such a vault. Anything that is not a Squads-owned Multisig
+// account is resolved back to its parent multisig from public chain state:
+// program -> ProgramData.authority -> vault; vault -> the Squads-owned
+// account of size 132 + 33*n in a recent Squads transaction whose
+// derived vault (index 0..255) equals the address. Says what it did on
+// stderr so a reader can check the chain of custody.
+const BPF_LOADER = new PublicKey("BPFLoaderUpgradeab1e11111111111111111111111");
+async function resolveMultisig(conn, pk, delay) {
+  const info = await withRetry(() => conn.getAccountInfo(pk));
+  if (!info) throw new Error(`account ${pk.toBase58()} not found`);
+  if (info.owner.equals(PROGRAM)) return { multisigPda: pk, info, via: [] };
+  const via = [];
+  if (info.owner.equals(BPF_LOADER)) {
+    const parsed = await withRetry(() => conn.getParsedAccountInfo(pk));
+    const pdAddr = parsed.value?.data?.parsed?.info?.programData;
+    if (!pdAddr) throw new Error(`${pk.toBase58()} is loader-owned but has no programData (a buffer or ProgramData account?)`);
+    await sleep(delay);
+    const pd = await withRetry(() => conn.getParsedAccountInfo(new PublicKey(pdAddr)));
+    const auth = pd.value?.data?.parsed?.info?.authority;
+    if (!auth) throw new Error(`program ${pk.toBase58()} has no upgrade authority (immutable)`);
+    via.push(`program ${pk.toBase58()} -> ProgramData ${pdAddr} -> authority ${auth}`);
+    pk = new PublicKey(auth);
+    await sleep(delay);
+    const ai = await withRetry(() => conn.getAccountInfo(pk));
+    if (ai && ai.owner.equals(PROGRAM)) return { multisigPda: pk, info: ai, via };
+    if (PublicKey.isOnCurve(pk.toBytes())) throw new Error(`upgrade authority ${pk.toBase58()} is an on-curve key, not a Squads vault: ${via.join("; ")}`);
+  } else if (PublicKey.isOnCurve(pk.toBytes())) {
+    throw new Error(`${pk.toBase58()} is an on-curve key (owner ${info.owner.toBase58()}), not a multisig, vault or program`);
+  }
+  // pk is an off-curve PDA: look for the multisig it belongs to.
+  const sigs = await withRetry(() => conn.getSignaturesForAddress(pk, { limit: 50 }));
+  const seen = new Set();
+  for (const s of sigs) {
+    await sleep(delay);
+    const tx = await withRetry(() => conn.getTransaction(s.signature, { maxSupportedTransactionVersion: 0 }));
+    if (!tx) continue;
+    const keys = tx.transaction.message.staticAccountKeys ?? tx.transaction.message.accountKeys;
+    if (!keys.some((k) => k.equals(PROGRAM))) continue;
+    for (const k of keys) {
+      const b = k.toBase58();
+      if (seen.has(b) || k.equals(PROGRAM)) continue;
+      seen.add(b);
+      await sleep(delay);
+      const ai = await withRetry(() => conn.getAccountInfo(k));
+      if (!ai || !ai.owner.equals(PROGRAM) || (ai.data.length - 132) % 33 !== 0 || ai.data.length < 165) continue;
+      for (let i = 0; i < 256; i++) {
+        if (sq.getVaultPda({ multisigPda: k, index: i })[0].equals(pk)) {
+          via.push(`vault ${pk.toBase58()} = vault ${i} of multisig ${b} (found in tx ${s.signature.slice(0, 12)}…)`);
+          return { multisigPda: k, info: ai, via };
+        }
+      }
+    }
+  }
+  throw new Error(`${pk.toBase58()} is an off-curve PDA but no Squads multisig deriving it was found in its last ${sigs.length} transactions: ${via.join("; ") || "no program hop"}`);
+}
+
 const lutCache = new Map();
 async function resolveTables(conn, innerBytes, delay) {
   const raw = lib.parseCompactVaultMessage(innerBytes);
@@ -236,15 +294,16 @@ function collectObserved(msg, vault, obs) {
   const a = parseArgs(process.argv.slice(2));
   const msArg = a._[0];
   if (!msArg) {
-    console.error("usage: screen.js <multisig> [--from N] [--to N] [--out DIR] [--rpc URL] [--delay MS] [--names FILE] [--no-luts]");
+    console.error("usage: screen.js <multisig|vault|program> [--from N] [--to N] [--out DIR] [--rpc URL] [--delay MS] [--names FILE] [--no-luts]");
     process.exit(2);
   }
   const rpc = a.rpc || RPC;
   const delay = Number(a.delay || 250);
   const conn = new Connection(rpc, "confirmed");
-  const multisigPda = new PublicKey(msArg);
-  const msInfo = await withRetry(() => conn.getAccountInfo(multisigPda));
-  if (!msInfo) throw new Error("multisig account not found");
+  const resolved = await resolveMultisig(conn, new PublicKey(msArg), delay);
+  const multisigPda = resolved.multisigPda;
+  const msInfo = resolved.info;
+  for (const v of resolved.via) console.error(`resolved: ${v}`);
   const ms = lib.decodeMultisig(msInfo.data, multisigPda);
   const vault = ms.vault0 ?? lib.pdas(multisigPda, 0n).vaultPda?.toBase58?.() ?? sq.getVaultPda({ multisigPda, index: 0 })[0].toBase58();
   const latest = Number(ms.transactionIndex);
@@ -343,6 +402,7 @@ function collectObserved(msg, vault, obs) {
   md.push(`# Treasury screen — ${multisigPda.toBase58()}`);
   md.push(``);
   md.push(`Generated ${new Date().toISOString()} by [squads-cosigner](https://github.com/Protogonos42/squads-cosigner) \`scripts/screen.js\`, read-only, from public chain state via \`${rpc}\`. Written by an AI agent (Protogonos); verify anything you act on.`);
+  for (const v of resolved.via) md.push(``, `Resolved from input: ${v}`);
   md.push(``);
   md.push(`## Configuration`);
   md.push(``);

@@ -37,7 +37,7 @@ squads-cosigner approve|reject|execute <proposal> --rules r.json --key k.json [-
 squads-cosigner watch   --rules r.json --key k.json [--log audit.jsonl]
                                                           # daemon: approve/execute/skip, hash-chained log ← shipped (devnet)
 squads-cosigner verify-log audit.jsonl                    # re-hash the chain
-node scripts/screen.js <multisig> [--from N --to N]       # treasury screen: full history decoded (even closed
+node scripts/screen.js <multisig | vault | program-id> [--from N --to N]       # treasury screen: full history decoded (even closed
         [--names names/<program>.json] [--no-luts]        # proposals), lookup tables resolved + mutable ones flagged,
                                                           # observed rules.json, markdown report ← shipped
                                                           # --names: name a custom program's instructions by Anchor
